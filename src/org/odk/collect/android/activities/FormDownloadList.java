@@ -14,12 +14,8 @@
 
 package org.odk.collect.android.activities;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.odk.collect.android.R;
 import org.odk.collect.android.listeners.FormDownloaderListener;
-import org.odk.collect.android.logic.GlobalConstants;
 import org.odk.collect.android.preferences.ServerPreferences;
 import org.odk.collect.android.tasks.DownloadFormsTask;
 import org.odk.collect.android.utilities.FileUtils;
@@ -46,6 +42,10 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Responsible for displaying, adding and deleting all the valid forms in the forms directory.
@@ -60,11 +60,11 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
 
     private static final String BUNDLE_TOGGLED_KEY = "toggled";
     private static final String BUNDLE_FORM_LIST = "formlist";
+    private static final String DIALOG_TITLE = "dialogtitle";
+    private static final String DIALOG_MSG = "dialogmsg";
+    private static final String DIALOG_SHOWING = "dialogshowing";
+
     public static final String LIST_URL = "listurl";
-    public static final String DL_ERROR = "dlerror";
-    public static final String FILES_DOWNLOADED = "filesdownloaded";
-    public static final String DIALOG_TITLE = "dialogtitle";
-    public static final String DIALOG_MSG = "dialogmsg";
 
     private String mAlertMsg;
     private boolean mAlertShowing = false;
@@ -124,13 +124,11 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
             }
         });
 
-
         if (savedInstanceState != null) {
             // If the screen has rotated, the hashmap with the form names and urls is passed here.
             if (savedInstanceState.containsKey(BUNDLE_FORM_LIST)) {
                 mFormNamesAndURLs =
-                        (HashMap<String, String>) savedInstanceState
-                                .getSerializable(BUNDLE_FORM_LIST);
+                    (HashMap<String, String>) savedInstanceState.getSerializable(BUNDLE_FORM_LIST);
             }
             // indicating whether or not select-all is on or off.
             if (savedInstanceState.containsKey(BUNDLE_TOGGLED_KEY)) {
@@ -138,20 +136,19 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
             }
 
             // to restore alert dialog.
-            //TODO: make these constants
-            if (savedInstanceState.containsKey("title")) {
-                mAlertTitle = savedInstanceState.getString("title");
+            if (savedInstanceState.containsKey(DIALOG_TITLE)) {
+                mAlertTitle = savedInstanceState.getString(DIALOG_TITLE);
             }
-            if (savedInstanceState.containsKey("msg")) {
-                mAlertMsg = savedInstanceState.getString("msg");
+            if (savedInstanceState.containsKey(DIALOG_MSG)) {
+                mAlertMsg = savedInstanceState.getString(DIALOG_MSG);
             }
-            if (savedInstanceState.containsKey("msg")) {
-                mAlertShowing = savedInstanceState.getBoolean("showing");
+            if (savedInstanceState.containsKey(DIALOG_SHOWING)) {
+                mAlertShowing = savedInstanceState.getBoolean(DIALOG_SHOWING);
             }
         }
 
         if (mAlertShowing) {
-            this.createAlertDialog(mAlertTitle, mAlertMsg);
+            createAlertDialog(mAlertTitle, mAlertMsg);
         }
 
         mDownloadFormsTask = (DownloadFormsTask) getLastNonConfigurationInstance();
@@ -177,16 +174,15 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
         }
         showDialog(PROGRESS_DIALOG);
 
-        FileUtils.createFolder(GlobalConstants.CACHE_PATH);
+        FileUtils.createFolder(FileUtils.CACHE_PATH);
         mDownloadFormsTask = new DownloadFormsTask();
         mDownloadFormsTask.setDownloaderListener(this);
 
         SharedPreferences settings =
-                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+            PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         String url =
-                settings
-                        .getString(ServerPreferences.KEY_SERVER, getString(R.string.default_server))
-                        + "/formList";
+            settings.getString(ServerPreferences.KEY_SERVER, getString(R.string.default_server))
+                    + "/formList";
 
         HashMap<String, String> arg = new HashMap<String, String>();
         arg.put(LIST_URL, url);
@@ -194,15 +190,14 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
     }
 
 
-    //TODO: make these constants
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(BUNDLE_TOGGLED_KEY, mToggled);
         outState.putSerializable(BUNDLE_FORM_LIST, mFormNamesAndURLs);
-        outState.putString("title", mAlertTitle);
-        outState.putString("msg", mAlertMsg);
-        outState.putBoolean("showing", mAlertShowing);
+        outState.putString(DIALOG_TITLE, mAlertTitle);
+        outState.putString(DIALOG_MSG, mAlertMsg);
+        outState.putBoolean(DIALOG_SHOWING, mAlertShowing);
     }
 
 
@@ -210,8 +205,8 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
         ArrayList<String> formNames = new ArrayList<String>(mFormNamesAndURLs.keySet());
 
         mFileAdapter =
-                new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice,
-                        formNames);
+            new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice,
+                    formNames);
         setListAdapter(mFileAdapter);
         getListView().setItemsCanFocus(false);
         getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -227,7 +222,7 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, MENU_PREFERENCES, 0, getString(R.string.server_preferences)).setIcon(
-                android.R.drawable.ic_menu_preferences);
+            android.R.drawable.ic_menu_preferences);
         return true;
     }
 
@@ -255,12 +250,12 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
             case PROGRESS_DIALOG:
                 mProgressDialog = new ProgressDialog(this);
                 DialogInterface.OnClickListener loadingButtonListener =
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                mDownloadFormsTask.setDownloaderListener(null);
-                            }
-                        };
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            mDownloadFormsTask.setDownloaderListener(null);
+                        }
+                    };
                 mProgressDialog.setTitle(getString(R.string.downloading_data));
                 mProgressDialog.setMessage(getString(R.string.please_wait));
                 mProgressDialog.setIndeterminate(true);
@@ -293,7 +288,7 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
             // show dialog box
             showDialog(PROGRESS_DIALOG);
 
-            FileUtils.createFolder(GlobalConstants.FORMS_PATH);
+            FileUtils.createFolder(FileUtils.FORMS_PATH);
             mDownloadFormsTask = new DownloadFormsTask();
             mDownloadFormsTask.setDownloaderListener(this);
             mDownloadFormsTask.execute(filesToDownload);
@@ -339,26 +334,53 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
 
     public void formDownloadingComplete(HashMap<String, String> result) {
         dismissDialog(PROGRESS_DIALOG);
+        String dialogMessage = null;
+        String dialogTitle = null;
 
-        if (result != null && result.containsKey(FILES_DOWNLOADED)) {
-            // We just downloaded a bunch of files
-            String message = "";
-            String title = "";
-            if (result.containsKey(DIALOG_MSG)) {
-                message = (String) result.get(DIALOG_MSG);
+        if (result != null) {
+            if (result.containsKey(DownloadFormsTask.DL_FORMS)) {
+                // We tried to download one or more forms
+                if (!result.containsKey(DownloadFormsTask.DL_ERROR_MSG)) {
+                    // Download of forms succeeded
+                    dialogTitle = getString(R.string.download_complete);
+                    dialogMessage = getString(R.string.download_all_successful);
+
+                    result.remove(DownloadFormsTask.DL_FORMS);
+                    if (result.size() > 0) {
+                        // after we remove DL_FORMS, if we have anything left in the
+                        // hashmap it's the renamed files in <old, new>
+                        Set<String> keys = result.keySet();
+                        Iterator<String> i = keys.iterator();
+                        while (i.hasNext()) {
+                            String form = i.next();
+                            dialogMessage +=
+                                " " + getString(R.string.form_renamed, form, result.get(form));
+                        }
+                    }
+                } else {
+                    // Download of at least one form had an error
+                    String formName = result.get(DownloadFormsTask.DL_FORM);
+                    String errorMsg = result.get(DownloadFormsTask.DL_ERROR_MSG);
+
+                    dialogMessage =
+                        getString(R.string.download_failed_with_error, formName, errorMsg);
+                    dialogTitle = getString(R.string.error_downloading);
+                }
+                createAlertDialog(dialogTitle, dialogMessage);
+            } else {
+                // We tried to download a formlist
+                if (!result.containsKey(DownloadFormsTask.DL_ERROR_MSG)) {
+                    // Download succeeded
+                    mFormNamesAndURLs = result;
+                } else {
+                    // Download failed
+                    createAlertDialog(getString(R.string.load_remote_form_error), (String) result
+                            .get(DownloadFormsTask.DL_ERROR_MSG));
+                }
+
             }
-
-            if (result.containsKey(DIALOG_TITLE)) {
-                title = (String) result.get(DIALOG_TITLE);
-            }
-
-            createAlertDialog(title, message);
-
-        } else if (result.containsKey(DL_ERROR)) {
-            createAlertDialog("Error", (String) result.get(DL_ERROR));
         } else {
-            // we have just downloaded the form list
-            mFormNamesAndURLs = result;
+            Log.e(t, "result was null when downloading");
         }
         buildView();
     }
@@ -369,7 +391,6 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
         mAlertDialog.setTitle(title);
         mAlertDialog.setMessage(message);
         DialogInterface.OnClickListener quitListener = new DialogInterface.OnClickListener() {
-
             public void onClick(DialogInterface dialog, int i) {
                 switch (i) {
                     case DialogInterface.BUTTON1: // ok
@@ -389,11 +410,9 @@ public class FormDownloadList extends ListActivity implements FormDownloaderList
 
 
     public void progressUpdate(String currentFile, int progress, int total) {
-        mProgressDialog.setMessage("Fetching " + currentFile + ".\nFile " + progress + " of "
-                + total + " item(s)...");
+        mProgressDialog.setMessage(getString(R.string.fetching_file, currentFile, progress, total));
     }
 
 }
-
 
 // TODO: make dialog persist through screen rotations.

@@ -1,26 +1,21 @@
 /*
  * Copyright (C) 2009 University of Washington
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
 package org.odk.collect.android.activities;
 
-import java.util.ArrayList;
-
 import org.odk.collect.android.R;
 import org.odk.collect.android.database.FileDbAdapter;
-import org.odk.collect.android.logic.GlobalConstants;
 import org.odk.collect.android.preferences.ServerPreferences;
 import org.odk.collect.android.utilities.FileUtils;
 
@@ -35,9 +30,11 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 /**
- * Responsible for displaying buttons to launch the major activities. Launches
- * some activities based on returns of others.
+ * Responsible for displaying buttons to launch the major activities. Launches some activities based
+ * on returns of others.
  * 
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
@@ -76,7 +73,7 @@ public class MainMenuActivity extends Activity {
         mEnterDataButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 // make sure we haven't added forms
-                ArrayList<String> forms = FileUtils.getFilesAsArrayList(GlobalConstants.FORMS_PATH);
+                ArrayList<String> forms = FileUtils.getFilesAsArrayList(FileUtils.FORMS_PATH);
                 if (forms != null) {
                     mFormsCount = forms.size();
                 } else {
@@ -85,8 +82,8 @@ public class MainMenuActivity extends Activity {
 
                 if (mFormsCount == 0 && mAvailableCount == 0) {
                     Toast.makeText(getApplicationContext(),
-                            getString(R.string.no_items_error, getString(R.string.enter)),
-                            Toast.LENGTH_SHORT).show();
+                        getString(R.string.no_items_error, getString(R.string.enter)),
+                        Toast.LENGTH_SHORT).show();
                 } else {
                     Intent i = new Intent(getApplicationContext(), FormChooserList.class);
                     startActivityForResult(i, FORM_CHOOSER);
@@ -101,8 +98,8 @@ public class MainMenuActivity extends Activity {
             public void onClick(View v) {
                 if ((mSavedCount + mCompletedCount) == 0) {
                     Toast.makeText(getApplicationContext(),
-                            getString(R.string.no_items_error, getString(R.string.review)),
-                            Toast.LENGTH_SHORT).show();
+                        getString(R.string.no_items_error, getString(R.string.review)),
+                        Toast.LENGTH_SHORT).show();
                 } else {
                     Intent i = new Intent(getApplicationContext(), InstanceChooserList.class);
                     i.putExtra(FileDbAdapter.KEY_STATUS, FileDbAdapter.STATUS_COMPLETE);
@@ -118,8 +115,8 @@ public class MainMenuActivity extends Activity {
             public void onClick(View v) {
                 if (mCompletedCount == 0) {
                     Toast.makeText(getApplicationContext(),
-                            getString(R.string.no_items_error, getString(R.string.send)),
-                            Toast.LENGTH_SHORT).show();
+                        getString(R.string.no_items_error, getString(R.string.send)),
+                        Toast.LENGTH_SHORT).show();
                 } else {
                     Intent i = new Intent(getApplicationContext(), InstanceUploaderList.class);
                     startActivityForResult(i, INSTANCE_UPLOADER);
@@ -130,6 +127,7 @@ public class MainMenuActivity extends Activity {
 
         // manage forms button. no result expected.
         mManageFilesButton = (Button) findViewById(R.id.manage_forms);
+        mManageFilesButton.setText(getString(R.string.manage_files));
         mManageFilesButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 Intent i = new Intent(getApplicationContext(), FileManagerTabs.class);
@@ -147,9 +145,8 @@ public class MainMenuActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        refreshView();
+        updateButtons();
     }
-
 
 
     /**
@@ -158,7 +155,7 @@ public class MainMenuActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (resultCode == RESULT_CANCELED) {
-            return; 
+            return;
         }
 
         String formPath = null;
@@ -166,18 +163,18 @@ public class MainMenuActivity extends Activity {
         switch (requestCode) {
             // returns with a form path, start entry
             case FORM_CHOOSER:
-                formPath = intent.getStringExtra(GlobalConstants.KEY_FORMPATH);
+                formPath = intent.getStringExtra(FormEntryActivity.KEY_FORMPATH);
                 i = new Intent("org.odk.collect.android.action.FormEntry");
-                i.putExtra(GlobalConstants.KEY_FORMPATH, formPath);
+                i.putExtra(FormEntryActivity.KEY_FORMPATH, formPath);
                 startActivity(i);
                 break;
             // returns with an instance path, start entry
             case INSTANCE_CHOOSER:
-                formPath = intent.getStringExtra(GlobalConstants.KEY_FORMPATH);
-                String instancePath = intent.getStringExtra(GlobalConstants.KEY_INSTANCEPATH);
+                formPath = intent.getStringExtra(FormEntryActivity.KEY_FORMPATH);
+                String instancePath = intent.getStringExtra(FormEntryActivity.KEY_INSTANCEPATH);
                 i = new Intent("org.odk.collect.android.action.FormEntry");
-                i.putExtra(GlobalConstants.KEY_FORMPATH, formPath);
-                i.putExtra(GlobalConstants.KEY_INSTANCEPATH, instancePath);
+                i.putExtra(FormEntryActivity.KEY_FORMPATH, formPath);
+                i.putExtra(FormEntryActivity.KEY_INSTANCEPATH, instancePath);
                 startActivity(i);
                 break;
             default:
@@ -187,32 +184,17 @@ public class MainMenuActivity extends Activity {
     }
 
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        FileDbAdapter fda = new FileDbAdapter(this);
-        fda.open();
-        fda.removeOrphanFormDefs();
-        fda.close();
-    }
-
-
-    private void refreshView() {
-        updateButtonCount();
-    }
-
-
     /**
      * Updates the button count and sets the text in the buttons.
      */
-    private void updateButtonCount() {
+    private void updateButtons() {
         // create adapter
-        FileDbAdapter fda = new FileDbAdapter(this);
+        FileDbAdapter fda = new FileDbAdapter();
         fda.open();
 
         // count for saved instances
         Cursor c =
-                fda.fetchFilesByType(FileDbAdapter.TYPE_INSTANCE, FileDbAdapter.STATUS_INCOMPLETE);
+            fda.fetchFilesByType(FileDbAdapter.TYPE_INSTANCE, FileDbAdapter.STATUS_INCOMPLETE);
         mSavedCount = c.getCount();
         c.close();
 
@@ -222,27 +204,15 @@ public class MainMenuActivity extends Activity {
         c.close();
 
         // count for downloaded forms
-        ArrayList<String> forms = FileUtils.getFilesAsArrayList(GlobalConstants.FORMS_PATH);
+        ArrayList<String> forms = FileUtils.getFilesAsArrayList(FileUtils.FORMS_PATH);
         if (forms != null) {
             mFormsCount = forms.size();
         } else {
             mFormsCount = 0;
         }
-
-        // count for available forms
-        c = fda.fetchFilesByType(FileDbAdapter.TYPE_FORM, FileDbAdapter.STATUS_AVAILABLE);
-        mAvailableCount = c.getCount();
-        c.close();
         fda.close();
 
-        // update button text
-        if (mAvailableCount == mFormsCount) {
-            mEnterDataButton.setText(getString(R.string.enter_data_button, mAvailableCount));
-        } else {
-            mEnterDataButton.setText(getString(R.string.enter_data));
-        }
-
-        mManageFilesButton.setText(getString(R.string.manage_files));
+        mEnterDataButton.setText(getString(R.string.enter_data_button, mFormsCount));
         mSendDataButton.setText(getString(R.string.send_data_button, mCompletedCount));
         mReviewDataButton.setText(getString(R.string.review_data_button, mSavedCount
                 + mCompletedCount));
@@ -259,7 +229,7 @@ public class MainMenuActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         menu.add(0, MENU_PREFERENCES, 0, getString(R.string.server_preferences)).setIcon(
-                android.R.drawable.ic_menu_preferences);
+            android.R.drawable.ic_menu_preferences);
         return true;
     }
 
@@ -273,6 +243,5 @@ public class MainMenuActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 
 }

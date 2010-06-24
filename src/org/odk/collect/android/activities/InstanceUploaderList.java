@@ -1,26 +1,21 @@
 /*
  * Copyright (C) 2009 University of Washington
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
 package org.odk.collect.android.activities;
 
-import java.util.ArrayList;
-
 import org.odk.collect.android.R;
 import org.odk.collect.android.database.FileDbAdapter;
-import org.odk.collect.android.logic.GlobalConstants;
 import org.odk.collect.android.preferences.ServerPreferences;
 
 import android.app.ListActivity;
@@ -36,9 +31,11 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 /**
- * Responsible for displaying all the valid forms in the forms directory. Stores
- * the path to selected form for use by {@link MainMenuActivity}.
+ * Responsible for displaying all the valid forms in the forms directory. Stores the path to
+ * selected form for use by {@link MainMenuActivity}.
  * 
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
@@ -46,9 +43,9 @@ import android.widget.Toast;
 
 // TODO long click form for submission log
 public class InstanceUploaderList extends ListActivity {
-	
-	private static final String BUNDLE_SELECTED_ITEMS_KEY = "selected_items";
-	private static final String BUNDLE_TOGGLED_KEY = "toggled";
+
+    private static final String BUNDLE_SELECTED_ITEMS_KEY = "selected_items";
+    private static final String BUNDLE_TOGGLED_KEY = "toggled";
 
     private static final int MENU_PREFERENCES = Menu.FIRST;
     private static final int INSTANCE_UPLOADER = 0;
@@ -79,7 +76,7 @@ public class InstanceUploaderList extends ListActivity {
                 } else {
                     // no items selected
                     Toast.makeText(getApplicationContext(), getString(R.string.noselect_error),
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -88,18 +85,18 @@ public class InstanceUploaderList extends ListActivity {
         mToggleButton = (Button) findViewById(R.id.toggle_button);
         mToggleButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-            	// toggle selections of items to all or none
+                // toggle selections of items to all or none
                 ListView ls = getListView();
                 mToggled = !mToggled;
                 // remove all items from selected list
                 mSelected.clear();
                 for (int pos = 0; pos < ls.getCount(); pos++) {
-                	ls.setItemChecked(pos, mToggled);
-                	// add all items if mToggled sets to select all
-                    if(mToggled)
-                    	mSelected.add(ls.getItemIdAtPosition(pos));
+                    ls.setItemChecked(pos, mToggled);
+                    // add all items if mToggled sets to select all
+                    if (mToggled)
+                        mSelected.add(ls.getItemIdAtPosition(pos));
                 }
-                   
+
             }
         });
 
@@ -107,22 +104,25 @@ public class InstanceUploaderList extends ListActivity {
 
 
     /**
-     * Retrieves instance information from {@link FileDbAdapter}, composes and
-     * displays each row.
+     * Retrieves instance information from {@link FileDbAdapter}, composes and displays each row.
      */
     private void refreshView() {
         // get all mInstances that match the status.
-        FileDbAdapter fda = new FileDbAdapter(this);
+        FileDbAdapter fda = new FileDbAdapter();
         fda.open();
         Cursor c = fda.fetchFilesByType(FileDbAdapter.TYPE_INSTANCE, FileDbAdapter.STATUS_COMPLETE);
         startManagingCursor(c);
 
-        String[] data = new String[] {FileDbAdapter.KEY_DISPLAY, FileDbAdapter.KEY_META};
-        int[] view = new int[] {R.id.text1, R.id.text2};
+        String[] data = new String[] {
+                FileDbAdapter.KEY_DISPLAY, FileDbAdapter.KEY_META
+        };
+        int[] view = new int[] {
+                R.id.text1, R.id.text2
+        };
 
         // render total instance view
         mInstances =
-                new SimpleCursorAdapter(this, R.layout.two_item_multiple_choice, c, data, view);
+            new SimpleCursorAdapter(this, R.layout.two_item_multiple_choice, c, data, view);
         setListAdapter(mInstances);
         getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         getListView().setItemsCanFocus(false);
@@ -134,9 +134,8 @@ public class InstanceUploaderList extends ListActivity {
         // cleanup
         fda.close();
 
-        // if current activity is being reinitialized due to changing
-        // orientation
-        // restore all check marks for ones selected
+        // if current activity is being reinitialized due to changing orientation restore all check
+        // marks for ones selected
         if (mRestored) {
             ListView ls = getListView();
             for (long id : mSelected) {
@@ -157,7 +156,7 @@ public class InstanceUploaderList extends ListActivity {
         ArrayList<String> selectedInstances = new ArrayList<String>();
 
         // get all checked items
-        FileDbAdapter fda = new FileDbAdapter(this);
+        FileDbAdapter fda = new FileDbAdapter();
         fda.open();
 
         Cursor c = null;
@@ -171,7 +170,7 @@ public class InstanceUploaderList extends ListActivity {
 
         // bundle intent with upload files
         Intent i = new Intent(this, InstanceUploaderActivity.class);
-        i.putExtra(GlobalConstants.KEY_INSTANCES, selectedInstances);
+        i.putExtra(FormEntryActivity.KEY_INSTANCES, selectedInstances);
         startActivityForResult(i, INSTANCE_UPLOADER);
         fda.close();
     }
@@ -192,7 +191,7 @@ public class InstanceUploaderList extends ListActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         menu.add(0, MENU_PREFERENCES, 0, getString(R.string.server_preferences)).setIcon(
-                android.R.drawable.ic_menu_preferences);
+            android.R.drawable.ic_menu_preferences);
         return true;
     }
 
@@ -270,7 +269,7 @@ public class InstanceUploaderList extends ListActivity {
         switch (requestCode) {
             // returns with a form path, start entry
             case INSTANCE_UPLOADER:
-                if (intent.getBooleanExtra(GlobalConstants.KEY_SUCCESS, false)) {
+                if (intent.getBooleanExtra(FormEntryActivity.KEY_SUCCESS, false)) {
                     refreshData();
                     if (mInstances.isEmpty()) {
                         finish();

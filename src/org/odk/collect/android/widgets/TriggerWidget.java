@@ -1,16 +1,14 @@
 /*
  * Copyright (C) 2009 University of Washington
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
@@ -20,7 +18,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
-import org.odk.collect.android.logic.GlobalConstants;
+import org.odk.collect.android.views.QuestionView;
 
 import android.content.Context;
 import android.util.TypedValue;
@@ -30,7 +28,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
 
 /**
  * Widget that allows user to scan barcodes and add them to the form.
@@ -42,8 +39,6 @@ public class TriggerWidget extends LinearLayout implements IQuestionWidget {
     private ToggleButton mActionButton;
     private TextView mStringAnswer;
     private TextView mDisplayText;
-    private String yes = "yes";
-    private String no = "no";
 
 
     public TriggerWidget(Context context) {
@@ -74,22 +69,22 @@ public class TriggerWidget extends LinearLayout implements IQuestionWidget {
         mActionButton.setText(getContext().getString(R.string.ack));
         mActionButton.setTextOff(getContext().getString(R.string.ack));
         mActionButton.setTextOn(getContext().getString(R.string.acked));
-        mActionButton.setTextSize(TypedValue.COMPLEX_UNIT_PX, GlobalConstants.APPLICATION_FONTSIZE);
+        mActionButton.setTextSize(TypedValue.COMPLEX_UNIT_PX, QuestionView.APPLICATION_FONTSIZE);
         mActionButton.setPadding(20, 20, 20, 20);
         mActionButton.setEnabled(!prompt.isReadOnly());
 
         mActionButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (TriggerWidget.this.mActionButton.isChecked()) {
-                    TriggerWidget.this.mStringAnswer.setText(yes);
+                    TriggerWidget.this.mStringAnswer.setText(R.string.yes);
                 } else {
-                    TriggerWidget.this.mStringAnswer.setText(no);
+                    TriggerWidget.this.mStringAnswer.setText(R.string.no);
                 }
             }
         });
 
         mStringAnswer = new TextView(getContext());
-        mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_PX, GlobalConstants.APPLICATION_FONTSIZE);
+        mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_PX, QuestionView.APPLICATION_FONTSIZE);
         mStringAnswer.setGravity(Gravity.CENTER);
 
         mDisplayText = new TextView(getContext());
@@ -97,7 +92,7 @@ public class TriggerWidget extends LinearLayout implements IQuestionWidget {
 
         String s = prompt.getAnswerText();
         if (s != null) {
-            if (s.equals(yes)) {
+            if (s.equals(getContext().getString(R.string.yes))) {
                 mActionButton.setChecked(true);
             } else {
                 mActionButton.setChecked(false);
@@ -108,14 +103,13 @@ public class TriggerWidget extends LinearLayout implements IQuestionWidget {
 
         // finish complex layout
         this.addView(mActionButton);
-        // this.addView(mStringAnswer);
     }
 
 
     public void setFocus(Context context) {
         // Hide the soft keyboard if it's showing.
         InputMethodManager inputManager =
-                (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
         inputManager.hideSoftInputFromWindow(this.getWindowToken(), 0);
     }
 }

@@ -72,9 +72,8 @@ public class SelectMultiWidget extends AbstractQuestionWidget implements IMultip
         for (int i = 0; i < prompt.getSelectChoices().size(); i++) {
             CheckBox c = buttons[i];
             if (c.isChecked()) {
-            	String value = prompt.getSelectChoices().get(i).getValue();
-    			Log.i(SelectMultiWidget.class.getName(), "getAnswer checked: " + value);
-                vc.add(new Selection(value));
+            	SelectChoice sc = prompt.getSelectChoices().get(i);
+                vc.add(new Selection(sc));
             }
         }
 
@@ -129,7 +128,7 @@ public class SelectMultiWidget extends AbstractQuestionWidget implements IMultip
 
         c.setId(AbstractQuestionWidget.newUniqueId());
         c.setText(prompt.getSelectChoiceText(sc));
-        c.setTextSize(TypedValue.COMPLEX_UNIT_PX, AbstractFolioView.APPLICATION_FONTSIZE);
+        c.setTextSize(TypedValue.COMPLEX_UNIT_DIP, AbstractFolioView.APPLICATION_FONTSIZE);
         c.setEnabled(!prompt.isReadOnly());
         
         // when clicked, check for readonly before toggling
@@ -143,11 +142,14 @@ public class SelectMultiWidget extends AbstractQuestionWidget implements IMultip
 
         String videoURI =
         		prompt.getSpecialFormSelectChoiceText(sc, "video");
+        
+        String bigImageURI = null;
+        bigImageURI = prompt.getSpecialFormSelectChoiceText(sc, "big-image");
          
         IAVTLayout mediaLayout = new IAVTLayout(getContext());
         
         mediaLayout.setId(AbstractQuestionWidget.newUniqueId());
-        mediaLayout.setAVT(c, audioURI, imageURI, videoURI);
+        mediaLayout.setAVT(c, audioURI, imageURI, videoURI, bigImageURI);
         
         addView(mediaLayout);
         return this;

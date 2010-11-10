@@ -73,8 +73,8 @@ public class SelectOneWidget extends AbstractQuestionWidget implements OnChecked
     		for ( int i = 0 ; i < buttons.length ; ++i ) {
 	    		RadioButton b = buttons[i];
 	    		if ( b.isChecked() ) {
-	                String s = prompt.getSelectChoices().elementAt(i).getValue();
-	                return new SelectOneData(new Selection(s));
+	    			SelectChoice sc = prompt.getSelectChoices().elementAt(i);
+	                return new SelectOneData(new Selection(sc));
 	    		}
 	    	}
     	}
@@ -122,7 +122,7 @@ public class SelectOneWidget extends AbstractQuestionWidget implements OnChecked
 
         r.setId(AbstractQuestionWidget.newUniqueId());
         r.setText(prompt.getSelectChoiceText(sc));
-        r.setTextSize(TypedValue.COMPLEX_UNIT_PX, AbstractFolioView.APPLICATION_FONTSIZE);
+        r.setTextSize(TypedValue.COMPLEX_UNIT_DIP, AbstractFolioView.APPLICATION_FONTSIZE);
         r.setEnabled(!prompt.isReadOnly());
 
         r.setOnCheckedChangeListener(this);
@@ -137,11 +137,14 @@ public class SelectOneWidget extends AbstractQuestionWidget implements OnChecked
 
         String videoURI =
         		prompt.getSpecialFormSelectChoiceText(sc, "video");
+        
+        String bigImageURI = null;
+        bigImageURI = prompt.getSpecialFormSelectChoiceText(sc, "big-image");
          
 
         IAVTLayout mediaLayout = new IAVTLayout(getContext());
         mediaLayout.setId(AbstractQuestionWidget.newUniqueId());
-        mediaLayout.setAVT(r, audioURI, imageURI, videoURI);
+        mediaLayout.setAVT(r, audioURI, imageURI, videoURI, bigImageURI);
         
         addView(mediaLayout);
         return this;

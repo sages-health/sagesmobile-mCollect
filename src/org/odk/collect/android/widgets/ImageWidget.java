@@ -34,7 +34,9 @@ import android.os.Handler;
 import android.provider.MediaStore.Images;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -133,7 +135,7 @@ public class ImageWidget extends AbstractQuestionWidget implements IBinaryWidget
         mCaptureButton = new Button(getContext());
         mCaptureButton.setText(getContext().getString(mCaptureText));
         mCaptureButton
-                .setTextSize(TypedValue.COMPLEX_UNIT_PX, AbstractFolioView.APPLICATION_FONTSIZE);
+                .setTextSize(TypedValue.COMPLEX_UNIT_DIP, AbstractFolioView.APPLICATION_FONTSIZE);
         mCaptureButton.setPadding(20, 20, 20, 20);
         mCaptureButton.setEnabled(!prompt.isReadOnly());
 
@@ -171,29 +173,25 @@ public class ImageWidget extends AbstractQuestionWidget implements IBinaryWidget
         mImageView.setAdjustViewBounds(true);
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
-			public void onClick(View v) {
-            	if ( signalDescendant(FocusChangeState.DIVERGE_VIEW_FROM_MODEL) ) {
-	            	// do nothing if there is no image...
-	            	if ( mBinaryName == null ) return;
-	
-	                Intent i = new Intent("android.intent.action.VIEW");
-	                String[] projection = {
-	                    "_id"
-	                };
-	                Cursor c =
-	                    getContext().getContentResolver().query(mExternalUri, projection,
-	                        "_data='" + mInstanceFolder + mBinaryName + "'", null, null);
-	                if (c.getCount() > 0) {
-	                    c.moveToFirst();
-	                    String id = c.getString(c.getColumnIndex("_id"));
-	
-	                    Log.i(t, "setting view path to: " + Uri.withAppendedPath(mExternalUri, id));
-	
-	                    i.setDataAndType(Uri.withAppendedPath(mExternalUri, id), "image/*");
-	                    getContext().startActivity(i);
-	
-	                }
-	                c.close();
+            public void onClick(View v) {
+            	if ( signalDescendant(FocusChangeState.DIVERGE_VIEW_FROM_MODEL)) {
+            		// do nothing if no image
+            		if ( mBinaryName == null ) return;
+                    Intent i = new Intent("android.intent.action.VIEW");
+                    String[] projection = {"_id"};
+                    Cursor c =
+                        getContext().getContentResolver().query(mExternalUri, projection,
+                            "_data='" + mInstanceFolder + mBinaryName + "'", null, null);
+                    if (c.getCount() > 0) {
+                        c.moveToFirst();
+                        String id = c.getString(c.getColumnIndex("_id"));
+
+                        Log.i(t, "setting view path to: " + Uri.withAppendedPath(mExternalUri, id));
+
+                        i.setDataAndType(Uri.withAppendedPath(mExternalUri, id), "image/*");
+                        getContext().startActivity(i);
+                    }
+                    c.close();
             	}
             }
         });
@@ -212,17 +210,14 @@ public class ImageWidget extends AbstractQuestionWidget implements IBinaryWidget
             mCaptureButton.setText(getContext().getString(mReplaceText));
             mDisplayText.setText(getContext().getString(R.string.one_capture));
             
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            File testsize = new File(mInstanceFolder + "/" + mBinaryName);
-            // You get an OutOfMemoryError if the file size is > ~900k.
-            // We're doing 500k just to be safe.
-            if (testsize.length() > 500000) {
-                options.inSampleSize = 8;
-            } else {
-                options = null;
-            }
+            Display display =
+                ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
+                        .getDefaultDisplay();
+            int screenWidth = display.getWidth();
+            int screenHeight = display.getHeight();
 
-            Bitmap bmp = BitmapFactory.decodeFile(mInstanceFolder + "/" + mBinaryName, options);
+            File f = new File(mInstanceFolder + "/" + mBinaryName);
+            Bitmap bmp = FileUtils.getBitmapScaledToDisplay(f, screenHeight, screenWidth);
             mImageView.setImageBitmap(bmp);
         } else {
             mCaptureButton.setText(getContext().getString(mCaptureText));

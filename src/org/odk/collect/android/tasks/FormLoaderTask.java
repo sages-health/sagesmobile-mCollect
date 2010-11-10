@@ -18,21 +18,21 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.reference.ReferenceManager;
-import org.javarosa.core.reference.RootTranslator;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.util.XFormUtils;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.database.FileDbAdapter;
 import org.odk.collect.android.listeners.FormLoaderListener;
-import org.odk.collect.android.logic.FileReferenceFactory;
 import org.odk.collect.android.utilities.FileUtils;
 
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Looper;
 import android.util.Log;
@@ -57,32 +57,31 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
     /**
      * Classes needed to serialize objects
      */
-    public final static String[] SERIALIABLE_CLASSES =
-        {
-                "org.javarosa.core.model.FormDef", "org.javarosa.core.model.GroupDef",
-                "org.javarosa.core.model.QuestionDef", "org.javarosa.core.model.data.DateData",
-                "org.javarosa.core.model.data.DateTimeData",
-                "org.javarosa.core.model.data.DecimalData",
-                "org.javarosa.core.model.data.GeoPointData",
-                "org.javarosa.core.model.data.helper.BasicDataPointer",
-                "org.javarosa.core.model.data.IntegerData",
-                "org.javarosa.core.model.data.MultiPointerAnswerData",
-                "org.javarosa.core.model.data.PointerAnswerData",
-                "org.javarosa.core.model.data.SelectMultiData",
-                "org.javarosa.core.model.data.SelectOneData",
-                "org.javarosa.core.model.data.StringData", "org.javarosa.core.model.data.TimeData",
-                "org.javarosa.core.services.locale.TableLocaleSource",
-                "org.javarosa.xpath.expr.XPathArithExpr", "org.javarosa.xpath.expr.XPathBoolExpr",
-                "org.javarosa.xpath.expr.XPathCmpExpr", "org.javarosa.xpath.expr.XPathEqExpr",
-                "org.javarosa.xpath.expr.XPathFilterExpr", "org.javarosa.xpath.expr.XPathFuncExpr",
-                "org.javarosa.xpath.expr.XPathNumericLiteral",
-                "org.javarosa.xpath.expr.XPathNumNegExpr", "org.javarosa.xpath.expr.XPathPathExpr",
-                "org.javarosa.xpath.expr.XPathStringLiteral",
-                "org.javarosa.xpath.expr.XPathUnionExpr",
-                "org.javarosa.xpath.expr.XPathVariableReference"
-        };
-    
+    public final static String[] SERIALIABLE_CLASSES = {
+            "org.javarosa.core.model.FormDef", "org.javarosa.core.model.GroupDef",
+            "org.javarosa.core.model.QuestionDef", "org.javarosa.core.model.data.DateData",
+            "org.javarosa.core.model.data.DateTimeData",
+            "org.javarosa.core.model.data.DecimalData",
+            "org.javarosa.core.model.data.GeoPointData",
+            "org.javarosa.core.model.data.helper.BasicDataPointer",
+            "org.javarosa.core.model.data.IntegerData",
+            "org.javarosa.core.model.data.MultiPointerAnswerData",
+            "org.javarosa.core.model.data.PointerAnswerData",
+            "org.javarosa.core.model.data.SelectMultiData",
+            "org.javarosa.core.model.data.SelectOneData",
+            "org.javarosa.core.model.data.StringData", "org.javarosa.core.model.data.TimeData",
+            "org.javarosa.core.services.locale.TableLocaleSource",
+            "org.javarosa.xpath.expr.XPathArithExpr", "org.javarosa.xpath.expr.XPathBoolExpr",
+            "org.javarosa.xpath.expr.XPathCmpExpr", "org.javarosa.xpath.expr.XPathEqExpr",
+            "org.javarosa.xpath.expr.XPathFilterExpr", "org.javarosa.xpath.expr.XPathFuncExpr",
+            "org.javarosa.xpath.expr.XPathNumericLiteral",
+            "org.javarosa.xpath.expr.XPathNumNegExpr", "org.javarosa.xpath.expr.XPathPathExpr",
+            "org.javarosa.xpath.expr.XPathStringLiteral", "org.javarosa.xpath.expr.XPathUnionExpr",
+            "org.javarosa.xpath.expr.XPathVariableReference"
+    };
+
     FormLoaderListener mStateListener;
+    String mErrorMsg;
 
     protected class FECWrapper {
         FormEntryController controller;
@@ -113,9 +112,9 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
     @Override
     protected FECWrapper doInBackground(String... path) {
 
-    	// we need to prepare this thread for message queue handling should a
-    	// toast be needed...
-    	Looper.prepare();
+        // we need to prepare this thread for message queue handling should a
+        // toast be needed...
+        Looper.prepare();
 
         FormEntryController fec = null;
         FormDef fd = null;
@@ -125,44 +124,80 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         String instancePath = path[1];
 
         File formXml = new File(formPath);
-        File formBin = new File(FileUtils.CACHE_PATH + FileUtils.getMd5Hash(formXml) + ".formdef");
+        String formHash = FileUtils.getMd5Hash(formXml);
+        File formBin = new File(FileUtils.CACHE_PATH + formHash + ".formdef");
 
-        if ( formXml.exists() && formBin.exists() &&
-        	 formBin.lastModified() < formXml.lastModified() ) {
-        	// the cache is stale w.r.t. the xml -- delete cache.
-        	// Mainly useful for development.  Could be more 
-        	// important going forward if users are updating 
-        	// or adding IAV features to existing forms.
-        	Log.i(t,"Stale .cache file -- deleting!");
-        	formBin.delete();
-        }
-            
         if (formBin.exists()) {
-        	// if we have binary, deserialize binary
+            // if we have binary, deserialize binary
         	try {
+        		Log.i(
+                t,
+                "Attempting to load " + formXml.getName() + " from cached file: "
+                        + formBin.getAbsolutePath());
         		fd = deserializeFormDef(formBin);
         	} catch ( Exception e ) {
-        		// didn't load -- delete the cache and try plain xml
-        		formBin.delete();
+        		// didn't load -- 
+        		// the common case here is that the javarosa library that 
+        		// serialized the binary is incompatible with the javarosa
+        		// library that is now attempting to deserialize it.
         	}
-        }
-        
-        if ( fd == null ) {
-            // no binary, or didn't load -- read from xml
-            try {
-            	Log.i(t,"Attempting read of " + formXml.getAbsolutePath());
 
-            	fis = new FileInputStream(formXml);
+        	if (fd == null) {
+                // some error occured with deserialization. Remove the file, and make a new .formdef
+                // from xml
+                Log.w(t,
+                    "Deserialization FAILED!  Deleting cache file: " + formBin.getAbsolutePath());
+                formBin.delete();
+            }
+        }
+        if (fd == null) {
+            // no binary, read from xml
+            try {
+                Log.i(t, "Attempting to load from: " + formXml.getAbsolutePath());
+                fis = new FileInputStream(formXml);
                 fd = XFormUtils.getFormFromInputStream(fis);
                 if (fd == null) {
-                    return null;
+                    mErrorMsg = "Error reading XForm file";
+                } else {
+                    serializeFormDef(fd, formPath);
                 }
-                serializeFormDef(fd, formPath);
-
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+                mErrorMsg = e.getMessage();
+            } catch (XFormParseException e) {
+                mErrorMsg = e.getMessage();
+                e.printStackTrace();
+            } catch (Exception e) {
+                mErrorMsg = e.getMessage();
+                e.printStackTrace();
+            } finally {
                 if (fd == null) {
+                    // remove cache reference from file db if it exists
+                    FileDbAdapter fda = new FileDbAdapter();
+                    fda.open();
+                    if (fda.deleteFile(null, formHash)) {
+                        Log.i(t, "Cached file: " + formBin.getAbsolutePath()
+                                + " removed from database");
+                    } else {
+                        Log.i(t, "Failed to remove cached file: " + formBin.getAbsolutePath()
+                                + " from database (might not have existed...)");
+                    }
+                    fda.close();
                     return null;
+                } else {
+                    // add to file db if it doesn't already exist.
+                    // MainMenu will add files that don't exist, but intents can load
+                    // FormEntryActivity directly.
+                    FileDbAdapter fda = new FileDbAdapter();
+                    fda.open();
+                    Cursor c = fda.fetchFilesByPath(null, formHash);
+                    if (c.getCount() == 0) {
+                        fda.createFile(formXml.getAbsolutePath(), FileDbAdapter.TYPE_FORM,
+                            FileDbAdapter.STATUS_AVAILABLE);
+                    }
+                    if (c != null)
+                        c.close();
+                    fda.close();
                 }
             }
         }
@@ -176,28 +211,26 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         fec = new FormEntryController(fem);
 
         try {
-	        // import existing data into formdef
-	        if (instancePath != null) {
-	            // This order is important.  Import data, then initialize.
-	            importData(instancePath, fec);
-	            fd.initialize(false);
-	        } else {
-	            fd.initialize(true);
-	        }
-        } catch ( Exception e ) {
-        	e.printStackTrace();
-            Toast.makeText(Collect.getInstance().getApplicationContext(), 
-                    Collect.getInstance().getString(R.string.load_error,
-                    		formXml.getName()) + " : " + e.getMessage(),
-                    Toast.LENGTH_LONG).show();
-        	return null;
+            // import existing data into formdef
+            if (instancePath != null) {
+                // This order is important. Import data, then initialize.
+                importData(instancePath, fec);
+                fd.initialize(false);
+            } else {
+                fd.initialize(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        	this.publishProgress(Collect.getInstance().getString(R.string.load_error,
+            		formXml.getName()) + " : " + e.getMessage());
+            return null;
         }
 
         // set paths to FORMS_PATH + formfilename-media/
         // This is a singleton, how do we ensure that we're not doing this
         // multiple times?
         String mediaPath = FileUtils.getFormMediaPath(formXml.getName());
-        
+
         Collect.getInstance().registerMediaPath(mediaPath);
 
         // clean up vars
@@ -238,8 +271,10 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
             // fix any language issues
             // : http://bitbucket.org/javarosa/main/issue/5/itext-n-appearing-in-restored-instances
             if (fec.getModel().getLanguages() != null) {
-                fec.getModel().getForm().localeChanged(fec.getModel().getLanguage(),
-                    fec.getModel().getForm().getLocalizer());
+                fec.getModel()
+                        .getForm()
+                        .localeChanged(fec.getModel().getLanguage(),
+                            fec.getModel().getForm().getLocalizer());
             }
 
             return true;
@@ -257,7 +292,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
     public FormDef deserializeFormDef(File formDef) {
 
         // TODO: any way to remove reliance on jrsp?
-    	Log.i(t,"Attempting read of " + formDef.getAbsolutePath());
+        Log.i(t, "Attempting read of " + formDef.getAbsolutePath());
 
         // need a list of classes that formdef uses
         PrototypeManager.registerPrototypes(SERIALIABLE_CLASSES);
@@ -283,15 +318,14 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
             e.printStackTrace();
             fd = null;
         } finally {
-        	if ( dis != null ) {
-        		try {
-        			dis.close();
-        		} catch ( IOException e ) {
-        			// ignore...
-        		}
-        	}
+            if (dis != null) {
+                try {
+                    dis.close();
+                } catch (IOException e) {
+                    // ignore...
+                }
+            }
         }
-        
 
         return fd;
     }
@@ -328,12 +362,22 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         }
     }
 
+    @Override
+	protected void onProgressUpdate(String... values) {
+		Toast.makeText(Collect.getInstance().getApplicationContext(), 
+            values[0], Toast.LENGTH_LONG).show();
+	}
 
     @Override
     protected void onPostExecute(FECWrapper wrapper) {
         synchronized (this) {
-            if (mStateListener != null)
-                mStateListener.loadingComplete(wrapper.getController());
+            if (mStateListener != null) {
+                if (wrapper == null) {
+                    mStateListener.loadingError(mErrorMsg);
+                } else {
+                    mStateListener.loadingComplete(wrapper.getController());
+                }
+            }
         }
     }
 

@@ -27,6 +27,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.DialogPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -35,6 +36,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.provider.MediaStore.Images;
+import android.util.AttributeSet;
 import android.widget.Toast;
 
 /**
@@ -58,6 +60,16 @@ public class PreferencesActivity extends PreferenceActivity implements
     public static String KEY_PROTOCOL = "protocol";
     public static String KEY_FORMLIST_URL = "formlist_url";
     public static String KEY_SUBMISSION_URL = "submission_url";
+    
+    public static String KEY_GSMSERVER_NUM = "gsmserverNum";
+    public static String KEY_DELIMITER = "delimiter";
+    public static String KEY_TICKSYMBOL = "tickSymbol";
+    public static String KEY_PRESERVE_FORMAT = "preserveFormat";
+    public static String KEY_INCLUDE_TAGS = "includeTags";
+    public static String KEY_FILL_BLANKS = "fillBlanks";
+    public static String KEY_USE_TICKS = "useTicks";
+    
+    
 
     private PreferenceScreen mSplashPathPreference;
     private EditTextPreference mSubmissionUrlPreference;
@@ -65,7 +77,13 @@ public class PreferencesActivity extends PreferenceActivity implements
     private EditTextPreference mServerUrlPreference;
     private EditTextPreference mUsernamePreference;
     private EditTextPreference mPasswordPreference;
+    
+    private EditTextPreference mGsmServerNumPreference;
+    private EditTextPreference mDelimiterPreference;
+    private EditTextPreference mTickSymbolPreference;
+    
     private Context mContext;
+
 
 
     @Override
@@ -90,6 +108,10 @@ public class PreferencesActivity extends PreferenceActivity implements
 
         updateFontSize();
         updateProtocol();
+        
+        updateGsmServerNum();
+        updateDelimiter();
+        updateTickSymbol();
 
     }
 
@@ -233,6 +255,12 @@ public class PreferencesActivity extends PreferenceActivity implements
             updateSplashPath();
         } else if (key.equals(KEY_FONT_SIZE)) {
             updateFontSize();
+        } else if (key.equals(KEY_GSMSERVER_NUM)) {
+        	updateGsmServerNum();
+        } else if (key.equals(KEY_DELIMITER)) {
+        	updateDelimiter();
+        } else if (key.equals(KEY_TICKSYMBOL)) {
+        	updateTickSymbol();
         }
 
     }
@@ -347,4 +375,20 @@ public class PreferencesActivity extends PreferenceActivity implements
         }
 
     }
+    
+    private void updateGsmServerNum() {
+    	mGsmServerNumPreference = (EditTextPreference) findPreference(KEY_GSMSERVER_NUM);
+    	mGsmServerNumPreference.setSummary(mGsmServerNumPreference.getText());
+    }
+
+    private void updateDelimiter() {
+    	mDelimiterPreference = (EditTextPreference) findPreference(KEY_DELIMITER);
+    	mDelimiterPreference.setSummary(mDelimiterPreference.getText());
+    }
+
+    private void updateTickSymbol() {
+    	mTickSymbolPreference = (EditTextPreference) findPreference(KEY_TICKSYMBOL);
+    	mTickSymbolPreference.setSummary(mTickSymbolPreference.getText());
+    }
 }
+

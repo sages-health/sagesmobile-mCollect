@@ -1,0 +1,28 @@
+<?xml version='1.0' ?>
+<NewWidgets id="NewWidgets">
+	<numberAsString tag="+NUM">12343212</numberAsString>
+	<locationMap tag="+LOC" />
+	<time tag="+TM">15:15:00.000Z</time>
+	<dateTime tag="+DT">2011-09-07T15:27:00.000Z</dateTime>
+	<q1 tag="+Q1">c1</q1>
+	<q2 tag="+Q2">c3 c4</q2>
+	<q0>c4</q0>
+	<q3>Guinea</q3>
+	<q4 />
+	<q4a />
+	<q5 />
+	<q6>Yes</q6>
+	<q7>c2</q7>
+	<listGroup>
+		<q8 />
+		<q9>yes</q9>
+		<q10>no</q10>
+		<q11>yes</q11>
+		<q12>no</q12>
+	</listGroup>
+	<multiListGroup>
+		<q13 />
+		<q14 />
+		<q15 />
+	</multiListGroup>
+</NewWidgets>

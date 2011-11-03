@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 
 /**
@@ -98,10 +99,19 @@ public class MainMenuActivity extends Activity {
         mSendDataButton = (Button) findViewById(R.id.send_data);
         mSendDataButton.setText(getString(R.string.send_data_button));
         mSendDataButton.setOnClickListener(new OnClickListener() {
+        	@Override
+        	public void onClick(View v) {
+        		Intent i = new Intent(getApplicationContext(), InstanceUploaderList.class);
+        		startActivity(i);
+        	}
+        });
+        
+        mSendDataButton.setOnLongClickListener(new OnLongClickListener() {
             @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), InstanceUploaderList.class);
+            public boolean onLongClick(View v) {
+                Intent i = new Intent(getApplicationContext(), InstanceSMSerList.class);
                 startActivity(i);
+                return true;
             }
         });
 

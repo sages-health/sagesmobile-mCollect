@@ -204,4 +204,19 @@
 <string name="select_answer">Select Answer</string>
 <string name="save_form_as">Form will be saved as:</string>
 <string name="save_as_error">Saved name must not be blank!</string>
+
+<string name="sms">SMS submission settings</string>
+<string name="override_xformsettings">Override settings in all XForms</string>
+<string name="default_gsmserver_num">5556</string>
+<string name="gsmserver_num">GSM server number</string>
+<string name="change_gsmserver_num">Change default GSM server number</string>
+<string name="preserve_format">Preserve formatting when sending SMS</string>
+<string name="include_tags">Include field tags if present</string>
+<string name="fill_blanks">Replace blank values with "."</string>
+<string name="use_ticks">Use ticks to surround values</string>
+<string name="tick_symbol">Tick symbol to surround values</string>
+<string name="delimiter">Delimiter to separate values</string>
+<string name="default_delimiter"> </string>
+
+
 </resources>

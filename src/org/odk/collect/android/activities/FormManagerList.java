@@ -14,6 +14,8 @@
 
 package org.odk.collect.android.activities;
 
+import java.util.ArrayList;
+
 import org.odk.collect.android.R;
 import org.odk.collect.android.listeners.DiskSyncListener;
 import org.odk.collect.android.provider.FormsProviderAPI.FormsColumns;
@@ -23,7 +25,6 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -37,8 +38,6 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 /**
  * Responsible for displaying and deleting all the valid forms in the forms directory.
  * 
@@ -49,7 +48,6 @@ public class FormManagerList extends ListActivity implements DiskSyncListener {
     private static String t = "FormManagerList";
     private AlertDialog mAlertDialog;
     private Button mDeleteButton;
-    private Button mGetButton;
 
     private SimpleCursorAdapter mInstances;
     private ArrayList<Long> mSelected = new ArrayList<Long>();
@@ -65,15 +63,6 @@ public class FormManagerList extends ListActivity implements DiskSyncListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.form_manage_list);
-        mGetButton = (Button) findViewById(R.id.get_button);
-        mGetButton.setText(getString(R.string.get_forms));
-        mGetButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), FormDownloadList.class);
-                startActivity(i);
-            }
-        });
 
         mDeleteButton = (Button) findViewById(R.id.delete_button);
         mDeleteButton.setText(getString(R.string.delete_file));

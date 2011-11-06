@@ -42,7 +42,7 @@ import android.text.Spanned;
 import android.widget.Toast;
 
 /**
- * @author yanokwaa
+ * @author yanokwa
  */
 public class PreferencesActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener {

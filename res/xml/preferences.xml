@@ -76,47 +76,58 @@
 		<CheckBoxPreference
 			android:id="@+id/override_xformsettings"
 			android:key="overrideXformSettings"
-			android:title="@string/override_xformsettings" />
-		<EditTextPreference
-			android:id="@+id/gsmserver_num"
-			android:key="gsmserverNum"
-			android:defaultValue="@string/default_gsmserver_num"
-			android:title="@string/gsmserver_num"
-			android:dialogTitle="@string/change_gsmserver_num" />			
-		<CheckBoxPreference
-			android:id="@+id/preserve_format"
-			android:key="preserveFormat"
-			android:title="@string/preserve_format" />
-		<CheckBoxPreference
-			android:id="@+id/include_tags"
-			android:key="includeTags"
-			android:title="@string/include_tags" />
-		<CheckBoxPreference
-			android:key="fillBlanks"
-			android:title="@string/fill_blanks" android:id="@+id/fill_blanks"/>
-		<CheckBoxPreference
-			android:id="@+id/use_ticks"
-			android:key="useTicks"
-			android:title="@string/use_ticks" />
-		<EditTextPreference
-			android:id="@+id/tick_symbol"
-			android:key="tickSymbol"
-			android:title="@string/tick_symbol"
-			android:dialogTitle="@string/tick_symbol" />			
-		<EditTextPreference
-			android:id="@+id/delimiter"
-			android:key="delimiter"
-			android:title="@string/delimiter"
-			android:dialogTitle="@string/delimiter"
-			android:defaultValue="@string/default_delimiter" />			
-		<org.odk.collect.android.preferences.ODKDialogPreference
-			android:key="dialogTickSymbol"
-			android:title="@string/tick_symbol" 
-			android:dialogLayout="@layout/dialog_tick_symbol"
-			android:negativeButtonText="NO TICK"
-			android:positiveButtonText="YES TICK"
-			/>
+			android:title="@string/override_xformsettings"
+			android:summary="@string/override_xformsettings_summary"/>
+		<PreferenceScreen 
+			android:key="xformsettings_disabled"
+			android:title="Override Settings"
+			android:dependency="overrideXformSettings"
+			android:layout="?android:attr/preferenceLayoutChild" 
+			
+		 >
+		
+			<EditTextPreference
+				android:id="@+id/gsmserver_num"
+				android:key="gsmserverNum"
+				android:defaultValue="@string/default_gsmserver_num"
+				android:title="@string/gsmserver_num"
+				android:dialogTitle="@string/change_gsmserver_num" />			
+			<CheckBoxPreference
+				android:id="@+id/preserve_format"
+				android:key="preserveFormat"
+				android:title="@string/preserve_format" />
+			<CheckBoxPreference
+				android:id="@+id/include_tags"
+				android:key="includeTags"
+				android:title="@string/include_tags" />
+			<CheckBoxPreference
+				android:key="fillBlanks"
+				android:title="@string/fill_blanks" 
+				android:id="@+id/fill_blanks"/>
+			<CheckBoxPreference
+				android:id="@+id/use_ticks"
+				android:key="useTicks"
+				android:title="@string/use_ticks" />
+			<EditTextPreference
+				android:id="@+id/tick_symbol"
+				android:key="tickSymbol"
+				android:title="@string/tick_symbol"
+				android:dialogTitle="@string/tick_symbol" />			
+			<EditTextPreference
+				android:id="@+id/delimiter"
+				android:key="delimiter"
+				android:title="@string/delimiter"
+				android:dialogTitle="@string/delimiter"
+				android:defaultValue="@string/default_delimiter" />			
+			<org.odk.collect.android.preferences.ODKDialogPreference
+				android:key="dialogTickSymbol"
+				android:title="@string/tick_symbol" 
+				android:dialogLayout="@layout/dialog_tick_symbol"
+				android:negativeButtonText="NO TICK"
+				android:positiveButtonText="YES TICK"
+				/>
 				
+		</PreferenceScreen>	
 	</PreferenceCategory>
 	
 </PreferenceScreen>

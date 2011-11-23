@@ -206,7 +206,8 @@
 <string name="save_as_error">Saved name must not be blank!</string>
 
 <string name="sms">SMS submission settings</string>
-<string name="override_xformsettings">Override settings in all XForms</string>
+<string name="override_xformsettings">Override XForm Settings</string>
+    <string name="override_xformsettings_summary">Override settings in all XForms</string>
 <string name="default_gsmserver_num">5556</string>
 <string name="gsmserver_num">GSM server number</string>
 <string name="change_gsmserver_num">Change default GSM server number</string>

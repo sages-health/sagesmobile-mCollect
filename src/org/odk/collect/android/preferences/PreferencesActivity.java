@@ -61,6 +61,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     public static String KEY_FORMLIST_URL = "formlist_url";
     public static String KEY_SUBMISSION_URL = "submission_url";
     
+    public static String KEY_PREFSCREEN_XFORM_OVERRIDE = "xformsettings_disabled";
     public static String KEY_GSMSERVER_NUM = "gsmserverNum";
     public static String KEY_DELIMITER = "delimiter";
     public static String KEY_TICKSYMBOL = "tickSymbol";
@@ -90,6 +91,21 @@ public class PreferencesActivity extends PreferenceActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
+
+        /**
+         * FIX FOR: nested preference screen had black background that "hid" widgets
+         * http://stackoverflow.com/questions/3164862/black-screen-in-inner-preferencescreen
+         **/
+        PreferenceScreen prefScreen = (PreferenceScreen) findPreference(KEY_PREFSCREEN_XFORM_OVERRIDE);
+        prefScreen.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+        	
+        	@Override
+        	public boolean onPreferenceClick(Preference preference) {
+        		PreferenceScreen ps = (PreferenceScreen) preference;
+        		ps.getDialog().getWindow().setBackgroundDrawableResource(R.drawable.white);
+        		return false;
+        	}});
+        
         mContext = this;
 
         setTitle(getString(R.string.app_name) + " > " + getString(R.string.general_preferences));

@@ -334,7 +334,9 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     	
                     	
                     	SAXParseSMS handler = new SAXParseSMS(delimiter, preserveFormat, useFieldTags, fillBlanks, useTicks);
-                    	handler.setTickSymbols(ticksymbol);
+                    	if (useTicks){
+                    		handler.setTickSymbols(ticksymbol);
+                    	}
                     	
                     	saxParser.parse(instanceFile, handler);
                     	

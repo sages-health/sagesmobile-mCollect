@@ -28,16 +28,16 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.protocol.HttpContext;
+import org.jhuapl.edu.sages.sandbox.xformparser.SAXParseSMS;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.listeners.InstanceSMSerListener;
 import org.odk.collect.android.preferences.PreferencesActivity;
+import org.odk.collect.android.preferences.PreferencesSmsActivity;
 import org.odk.collect.android.provider.InstanceProviderAPI;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
 import org.odk.collect.android.utilities.SAXParserSMSUtil;
 import org.odk.collect.android.utilities.WebUtils;
-
-import src.sandbox.SAXParseSMS;
 
 import android.content.ContentValues;
 import android.content.SharedPreferences;
@@ -103,12 +103,11 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
 
                 String urlString = c.getString(c.getColumnIndex(InstanceColumns.SUBMISSION_URI));
                 if (urlString == null) {
-                    SharedPreferences settings =
-                        PreferenceManager.getDefaultSharedPreferences(Collect.getInstance());
-                    urlString = settings.getString(PreferencesActivity.KEY_SERVER_URL, null);
-                    String submissionUrl =
-                        settings.getString(PreferencesActivity.KEY_SUBMISSION_URL, "/submission");
-                    urlString = urlString + submissionUrl;
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(Collect.getInstance());
+                    urlString = settings.getString(PreferencesSmsActivity.KEY_GSMSERVER_NUM, null);
+                    String submissionUrl = "sms://";
+                    		//settings.getString(PreferencesSmsActivity.KEY_SUBMISSION_URL, "/submission");
+                    urlString = submissionUrl + urlString;
                 }
 
                 ContentValues cv = new ContentValues();
@@ -324,14 +323,14 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     	
                     	SharedPreferences settings =
                                 PreferenceManager.getDefaultSharedPreferences(Collect.getInstance());
-                    	String delimiter = settings.getString(PreferencesActivity.KEY_DELIMITER, " ");
-                    	smsNumber = settings.getString(PreferencesActivity.KEY_GSMSERVER_NUM, smsNumber);
-                    	String ticksymbol = settings.getString(PreferencesActivity.KEY_TICKSYMBOL, null);
+                    	String delimiter = settings.getString(PreferencesSmsActivity.KEY_DELIMITER, " ");
+                    	smsNumber = settings.getString(PreferencesSmsActivity.KEY_GSMSERVER_NUM, smsNumber);
+                    	String ticksymbol = settings.getString(PreferencesSmsActivity.KEY_TICKSYMBOL, null);
                     	
-                    	boolean useTicks = settings.getBoolean(PreferencesActivity.KEY_USE_TICKS, false);
-                    	boolean preserveFormat = settings.getBoolean(PreferencesActivity.KEY_PRESERVE_FORMAT, false);
-                    	boolean useFieldTags = settings.getBoolean(PreferencesActivity.KEY_INCLUDE_TAGS, false);
-                    	boolean fillBlanks = settings.getBoolean(PreferencesActivity.KEY_FILL_BLANKS, true);
+                    	boolean useTicks = settings.getBoolean(PreferencesSmsActivity.KEY_USE_TICKS, false);
+                    	boolean preserveFormat = settings.getBoolean(PreferencesSmsActivity.KEY_PRESERVE_FORMAT, false);
+                    	boolean useFieldTags = settings.getBoolean(PreferencesSmsActivity.KEY_INCLUDE_TAGS, false);
+                    	boolean fillBlanks = settings.getBoolean(PreferencesSmsActivity.KEY_FILL_BLANKS, true);
                     	
                     	
                     	SAXParseSMS handler = new SAXParseSMS(delimiter, preserveFormat, useFieldTags, fillBlanks, useTicks);

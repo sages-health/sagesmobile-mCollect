@@ -48,6 +48,7 @@ public class MainMenuActivity extends Activity {
     private Button mEnterDataButton;
     private Button mManageFilesButton;
     private Button mSendDataButton;
+    private Button mSendDataSmsButton;
     private Button mReviewDataButton;
 
     private AlertDialog mAlertDialog;
@@ -106,14 +107,17 @@ public class MainMenuActivity extends Activity {
         	}
         });
         
-        mSendDataButton.setOnLongClickListener(new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
+        // send sms data button. expects a result.
+        mSendDataSmsButton = (Button) findViewById(R.id.send_data_sms);
+        mSendDataSmsButton.setText(getString(R.string.send_data_button_sms));
+        mSendDataSmsButton.setOnClickListener(new OnClickListener() {
+        	@Override
+        	public void onClick(View v) {
                 Intent i = new Intent(getApplicationContext(), InstanceSMSerList.class);
                 startActivity(i);
-                return true;
-            }
+        	}
         });
+        
 
         // manage forms button. no result expected.
         mManageFilesButton = (Button) findViewById(R.id.manage_forms);

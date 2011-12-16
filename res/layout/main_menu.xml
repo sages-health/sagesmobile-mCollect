@@ -89,6 +89,18 @@
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"
           android:textSize="2pt" />
+              
+          <Button
+          android:id="@+id/send_data_sms"
+          android:textSize="21dp"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content" 
+          android:padding="20dp" />
+        
+          <TextView
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:textSize="2pt" />
     
           <Button
           android:id="@+id/manage_forms"

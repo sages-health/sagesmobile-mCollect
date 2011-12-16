@@ -143,6 +143,7 @@
 <string name="sending_items">Sending %1$s of %2$s item(s)</string>
 <string name="send_data">Send Finished Forms</string>
 <string name="send_data_button">Send Finished Forms</string>
+<string name="send_data_button_sms">SMS Finished Forms</string>
 <string name="send_selected_data">Send Selected</string>
 <string name="server_auth_credentials">Please enter username and password for server:\n%s</string>
 <string name="server_requires_auth">Server Requires Authentication</string>
@@ -206,17 +207,24 @@
 <string name="save_as_error">Saved name must not be blank!</string>
 
 <string name="sms">SMS submission settings</string>
+<string name="sms_settings">SMS Settings</string>
 <string name="override_xformsettings">Override XForm Settings</string>
-    <string name="override_xformsettings_summary">Override settings in all XForms</string>
+<string name="override_xformsettings_summary">Override settings in all XForms</string>
 <string name="default_gsmserver_num">5556</string>
 <string name="gsmserver_num">GSM server number</string>
 <string name="change_gsmserver_num">Change default GSM server number</string>
-<string name="preserve_format">Preserve formatting when sending SMS</string>
-<string name="include_tags">Include field tags if present</string>
-<string name="fill_blanks">Replace blank values with "."</string>
-<string name="use_ticks">Use ticks to surround values</string>
-<string name="tick_symbol">Tick symbol to surround values</string>
-<string name="delimiter">Delimiter to separate values</string>
+<string name="preserve_format">Preserve formatting </string>
+<string name="sum_preserveFormat">Preserve formatting when sending SMS</string>
+<string name="include_tags">Include Tags</string>
+<string name="sum_includeTags">Include field tags if present</string>
+<string name="fill_blanks">Fill blanks</string>
+<string name="sum_fillBlanks">Replace blank values with "."</string>
+<string name="use_ticks">Use Ticks</string>
+<string name="sum_useTicks">Use ticks to surround values</string>
+<string name="tick_symbol">Tick Symbol</string>
+<string name="sum_tickSymbol">Tick symbol to surround values</string>
+<string name="delimiter">Delimiter</string>
+<string name="sum_delimiter">Delimiter to separate values</string>
 <string name="default_delimiter"> </string>
 
 

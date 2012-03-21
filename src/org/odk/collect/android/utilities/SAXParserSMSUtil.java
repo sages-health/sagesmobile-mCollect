@@ -1,6 +1,11 @@
-/**
- * 
- */
+/******************************************************************************
+*                              COPYRIGHT NOTICE                              *
+* Copyright (c) 2011 The Johns Hopkins University/Applied Physics Laboratory *
+*                            All rights reserved.                            *
+*                                                                            *
+* This material was developed with U.S. Government support.                  *
+* The U.S. Government has certain rights in this material.                   *
+******************************************************************************/
 package org.odk.collect.android.utilities;
 
 import java.net.URISyntaxException;

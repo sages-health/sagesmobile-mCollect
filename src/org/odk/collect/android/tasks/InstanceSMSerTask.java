@@ -18,9 +18,13 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -32,13 +36,13 @@ import org.jhuapl.edu.sages.sandbox.xformparser.SAXParseSMS;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.listeners.InstanceSMSerListener;
-import org.odk.collect.android.preferences.PreferencesActivity;
 import org.odk.collect.android.preferences.PreferencesSmsActivity;
 import org.odk.collect.android.provider.InstanceProviderAPI;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
 import org.odk.collect.android.utilities.SAXParserSMSUtil;
 import org.odk.collect.android.utilities.WebUtils;
 
+import src.sandbox.DataChunker;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -57,6 +61,7 @@ import android.webkit.MimeTypeMap;
 public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, String>> {
 
     private static String t = "InstanceSMSerTask";
+    private static final int MULTIPART_SMS_SIZE = 100;
     private InstanceSMSerListener mStateListener;
     private static final int CONNECTION_TIMEOUT = 30000;
     private static final String fail = "FAILED: ";
@@ -110,6 +115,10 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     urlString = submissionUrl + urlString;
                 }
 
+            	final String formIdColName = "jrFormId";
+            	final int formIdColIndex = c.getColumnIndex("jrFormId");
+            	final String formId = c.getString(formIdColIndex);
+            	
                 ContentValues cv = new ContentValues();
                 URI u = null;
                 String smsNumber = null;
@@ -258,6 +267,7 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     continue;
                 }
 
+                
                 // find all files in parent directory
                 File[] allFiles = instanceFile.getParentFile().listFiles();
 
@@ -332,10 +342,14 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     	boolean useFieldTags = settings.getBoolean(PreferencesSmsActivity.KEY_INCLUDE_TAGS, false);
                     	boolean fillBlanks = settings.getBoolean(PreferencesSmsActivity.KEY_FILL_BLANKS, true);
                     	
+
                     	
                     	SAXParseSMS handler = new SAXParseSMS(delimiter, preserveFormat, useFieldTags, fillBlanks, useTicks);
                     	if (useTicks){
                     		handler.setTickSymbols(ticksymbol);
+                    	}
+                    	if ("multisms".equals(formId)){ //is this needed? handler sees the "id" element...
+                    		handler.setIsMultiSms(true);
                     	}
                     	
                     	saxParser.parse(instanceFile, handler);
@@ -347,8 +361,38 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     	
                     }
                     
+                    int blobLength = smsText.length();
+                    ArrayList<String> dividedBlob = null;
+                    
+                    if (blobLength > 160){
+                    	if ("multisms".equals(formId)){
+                    		smsText.replaceFirst(formId, "");
+                    	} else {
+                    		// prepare for header: segNum,totSegs,txID:#formID
+                    		smsText.replaceFirst(formId, "#" + formId);
+                    	}
+                    	try {
+//                    	dividedBlob = divideText(smsText, 100);
+                    	//MULTIPART_SMS_SIZE == 100;
+                    	dividedBlob = divideTextAddHeader(smsText, MULTIPART_SMS_SIZE, formId);
+                    	} catch (Exception e){
+                    		e.printStackTrace();
+                    		Log.e(t + ".divideTextAddHeader", e.getMessage());
+                    	}
+                    	Calendar cal = new GregorianCalendar();
+                    	int dayOfYear = cal.get(Calendar.DAY_OF_YEAR);
+                    	int hr = cal.get(Calendar.HOUR_OF_DAY);
+                    	int min = cal.get(Calendar.MINUTE);
+                    	int sec = cal.get(Calendar.SECOND);
+                    	String txId = dayOfYear + "" + hr + "" + min + "" + sec;
+                    	//applyHeaders(dividedBlob, txId);
+                    }
                     // now onto sending the SMS
                     SmsManager smsmanger = SmsManager.getDefault();
+                    if (dividedBlob !=  null){
+                    	//smsmanger.sendTextMessage(smsNumber, null, "dummy test", null, null/*sentIntent, deliveryIntent*/);
+                    	smsmanger.sendMultipartTextMessage(smsNumber, null, dividedBlob, null, null/* sentIntents, deliveryIntents*/);
+                    } else
                     if (smsText.length() > 140) {
                     	ArrayList<String> dividedText = smsmanger.divideMessage(smsText);
                     	smsmanger.sendMultipartTextMessage(smsNumber, null, dividedText, null, null/* sentIntents, deliveryIntents*/);
@@ -509,7 +553,84 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
     }
 
 
-    @Override
+    /**
+	 * @param dividedBlob
+	 * @param txId
+	 */
+	private void applyHeaders(List<String> dividedBlob, String txId) {
+		int totalSegs = dividedBlob.size();
+		for (int i = 1; i <= dividedBlob.size() + 1; i++){
+			String segText = dividedBlob.get(i);
+			String header = i + "," + totalSegs + "," + txId + ":";
+			segText = header + segText;
+			dividedBlob.set(i, segText);
+		}
+		System.out.println(txId);
+	}
+
+
+	/**
+	 * @param smsText
+	 * @param i
+	 */
+	private ArrayList<String> divideText(String smsText, int segSize) {
+		List<String> dividedText = new ArrayList<String>();
+		int numSegs = (int) Math.round(smsText.length() / (double) segSize);
+		int start = 0;
+		int end = segSize -1;
+		
+		String tmpString = "";
+//		String[] s = StringUtils.splitPreserveAllTokens(smsText, null, numSegs);
+		String[] s = DataChunker.chunkData(smsText);
+//		while (tmpString >= segSize){
+//			tmpString = smsText.substring(0,segSize - 1);
+//				
+//		}
+/*		for (int i=0; i <= numSegs; i++){
+			
+			dividedText.add(smsText.substring(start, end));
+			start = end + 1;
+			end = end + segSize;
+		}*/
+		
+		dividedText = Arrays.asList(s);
+		return new ArrayList<String>(dividedText);
+	}
+	
+	/**
+	 * @param smsText
+	 * @param i
+	 */
+	private ArrayList<String> divideTextAddHeader(String smsText, int segSize, String formId) {
+		ArrayList<String> dividedText = new ArrayList<String>();
+		int numSegs = (int) Math.round(smsText.length() / (double) segSize);
+		int start = 0;
+		int end = segSize -1;
+		
+		String tmpString = "";
+//		String[] s = StringUtils.splitPreserveAllTokens(smsText, null, numSegs);
+//TODO		String[] s = DataChunker.chunkData(smsText);
+		Map<String,String> s = DataChunker.chunkDataWithHeader(smsText, formId);
+//		while (tmpString >= segSize){
+//			tmpString = smsText.substring(0,segSize - 1);
+//				
+//		}
+		/*		for (int i=0; i <= numSegs; i++){
+			
+			dividedText.add(smsText.substring(start, end));
+			start = end + 1;
+			end = end + segSize;
+		}*/
+		
+		for (Entry<String,String> entry : s.entrySet()){
+			dividedText.add(entry.getKey() + entry.getValue());
+		}
+//		dividedText = Arrays.asList(s);
+		return dividedText;
+	}
+
+
+	@Override
     protected void onPostExecute(HashMap<String, String> value) {
         synchronized (this) {
             if (mStateListener != null) {

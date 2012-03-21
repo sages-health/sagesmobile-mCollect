@@ -18,6 +18,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.utilities.UrlUtils;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,9 +26,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.DialogPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -36,7 +37,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.provider.MediaStore.Images;
-import android.util.AttributeSet;
+import android.widget.ListAdapter;
 import android.widget.Toast;
 
 /**
@@ -61,14 +62,14 @@ public class PreferencesActivity extends PreferenceActivity implements
     public static String KEY_FORMLIST_URL = "formlist_url";
     public static String KEY_SUBMISSION_URL = "submission_url";
     
-    public static String KEY_PREFSCREEN_XFORM_OVERRIDE = "xformsettings_disabled";
-    public static String KEY_GSMSERVER_NUM = "gsmserverNum";
-    public static String KEY_DELIMITER = "delimiter";
-    public static String KEY_TICKSYMBOL = "tickSymbol";
-    public static String KEY_PRESERVE_FORMAT = "preserveFormat";
-    public static String KEY_INCLUDE_TAGS = "includeTags";
-    public static String KEY_FILL_BLANKS = "fillBlanks";
-    public static String KEY_USE_TICKS = "useTicks";
+//    public static String KEY_PREFSCREEN_XFORM_OVERRIDE = "xformsettings_disabled";
+//    public static String KEY_GSMSERVER_NUM = "gsmserverNum";
+//    public static String KEY_DELIMITER = "delimiter";
+//    public static String KEY_TICKSYMBOL = "tickSymbol";
+//    public static String KEY_PRESERVE_FORMAT = "preserveFormat";
+//    public static String KEY_INCLUDE_TAGS = "includeTags";
+//    public static String KEY_FILL_BLANKS = "fillBlanks";
+//    public static String KEY_USE_TICKS = "useTicks";
     
     
 
@@ -79,32 +80,66 @@ public class PreferencesActivity extends PreferenceActivity implements
     private EditTextPreference mUsernamePreference;
     private EditTextPreference mPasswordPreference;
     
-    private EditTextPreference mGsmServerNumPreference;
-    private EditTextPreference mDelimiterPreference;
-    private EditTextPreference mTickSymbolPreference;
+//    private EditTextPreference mGsmServerNumPreference;
+//    private EditTextPreference mDelimiterPreference;
+//    private EditTextPreference mTickSymbolPreference;
     
     private Context mContext;
+//    private PreferenceScreen prefScreen;
 
-
-
+    /* (non-Javadoc)
+     * @see android.app.Activity#onStart()
+     */
+    @Override
+    protected void onStart() {
+    	// TODO Auto-generated method stub
+    	super.onStart();
+//    	getWindow().setBackgroundDrawableResource(R.drawable.white);
+//    	getListView().setBackgroundColor(Color.WHITE);
+//        prefScreen = (PreferenceScreen) findPreference(KEY_PREFSCREEN_XFORM_OVERRIDE);
+//        getListView().setBackgroundColor(Color.WHITE);
+//        prefScreen.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+//        	
+//        	@Override
+//        	public boolean onPreferenceClick(Preference preference) {
+//        		PreferenceScreen ps = (PreferenceScreen) preference;
+//        		ps.getDialog().getWindow().setBackgroundDrawableResource(R.drawable.white);
+//        		return false;
+//        	}});
+//        
+//        Preference p = findPreference("");
+//        ListAdapter la = prefScreen.getRootAdapter();
+//        int count = la.getCount();
+//        la.isEmpty();
+    }
+    
+    /* (non-Javadoc)
+     * @see android.app.Activity#onCreateDialog(int)
+     */
+    @Override
+    protected Dialog onCreateDialog(int id) {
+    	// TODO Auto-generated method stub
+    	return super.onCreateDialog(id);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
 
-        /**
-         * FIX FOR: nested preference screen had black background that "hid" widgets
-         * http://stackoverflow.com/questions/3164862/black-screen-in-inner-preferencescreen
-         **/
-        PreferenceScreen prefScreen = (PreferenceScreen) findPreference(KEY_PREFSCREEN_XFORM_OVERRIDE);
-        prefScreen.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-        	
-        	@Override
-        	public boolean onPreferenceClick(Preference preference) {
-        		PreferenceScreen ps = (PreferenceScreen) preference;
-        		ps.getDialog().getWindow().setBackgroundDrawableResource(R.drawable.white);
-        		return false;
-        	}});
+//        /**
+//         * FIX FOR: nested preference screen had black background that "hid" widgets
+//         * http://stackoverflow.com/questions/3164862/black-screen-in-inner-preferencescreen
+//         **/
+//        prefScreen = (PreferenceScreen) findPreference(KEY_PREFSCREEN_XFORM_OVERRIDE);
+//        getListView().setBackgroundColor(Color.WHITE);
+//        prefScreen.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+//        	
+//        	@Override
+//        	public boolean onPreferenceClick(Preference preference) {
+//        		PreferenceScreen ps = (PreferenceScreen) preference;
+//        		ps.getDialog().getWindow().setBackgroundDrawableResource(R.drawable.white);
+//        		return false;
+//        	}});
         
         mContext = this;
 
@@ -125,9 +160,9 @@ public class PreferencesActivity extends PreferenceActivity implements
         updateFontSize();
         updateProtocol();
         
-        updateGsmServerNum();
-        updateDelimiter();
-        updateTickSymbol();
+//        updateGsmServerNum();
+//        updateDelimiter();
+//        updateTickSymbol();
 
     }
 
@@ -271,13 +306,13 @@ public class PreferencesActivity extends PreferenceActivity implements
             updateSplashPath();
         } else if (key.equals(KEY_FONT_SIZE)) {
             updateFontSize();
-        } else if (key.equals(KEY_GSMSERVER_NUM)) {
+        } /*else if (key.equals(KEY_GSMSERVER_NUM)) {
         	updateGsmServerNum();
         } else if (key.equals(KEY_DELIMITER)) {
         	updateDelimiter();
         } else if (key.equals(KEY_TICKSYMBOL)) {
         	updateTickSymbol();
-        }
+        }*/
 
     }
 
@@ -392,19 +427,19 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     }
     
-    private void updateGsmServerNum() {
-    	mGsmServerNumPreference = (EditTextPreference) findPreference(KEY_GSMSERVER_NUM);
-    	mGsmServerNumPreference.setSummary(mGsmServerNumPreference.getText());
-    }
-
-    private void updateDelimiter() {
-    	mDelimiterPreference = (EditTextPreference) findPreference(KEY_DELIMITER);
-    	mDelimiterPreference.setSummary(mDelimiterPreference.getText());
-    }
-
-    private void updateTickSymbol() {
-    	mTickSymbolPreference = (EditTextPreference) findPreference(KEY_TICKSYMBOL);
-    	mTickSymbolPreference.setSummary(mTickSymbolPreference.getText());
-    }
+//    private void updateGsmServerNum() {
+//    	mGsmServerNumPreference = (EditTextPreference) findPreference(KEY_GSMSERVER_NUM);
+//    	mGsmServerNumPreference.setSummary(mGsmServerNumPreference.getText());
+//    }
+//
+//    private void updateDelimiter() {
+//    	mDelimiterPreference = (EditTextPreference) findPreference(KEY_DELIMITER);
+//    	mDelimiterPreference.setSummary(mDelimiterPreference.getText());
+//    }
+//
+//    private void updateTickSymbol() {
+//    	mTickSymbolPreference = (EditTextPreference) findPreference(KEY_TICKSYMBOL);
+//    	mTickSymbolPreference.setSummary(mTickSymbolPreference.getText());
+//    }
 }
 

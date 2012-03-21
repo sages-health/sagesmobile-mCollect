@@ -1,0 +1,60 @@
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory
+		android:title="@string/sms">
+		<CheckBoxPreference
+			android:id="@+id/override_xformsettings"
+			android:key="overrideXformSettings"
+			android:title="@string/override_xformsettings"
+			android:summary="@string/override_xformsettings_summary"/>
+
+			<EditTextPreference
+				android:id="@+id/gsmserver_num"
+				android:key="gsmserverNum"
+				android:defaultValue="@string/default_gsmserver_num"
+				android:dependency="overrideXformSettings"
+				android:title="@string/gsmserver_num"
+				android:dialogTitle="@string/change_gsmserver_num" />			
+			<CheckBoxPreference
+				android:id="@+id/preserve_format"
+				android:key="preserveFormat"
+				android:dependency="overrideXformSettings"
+				android:summary="@string/sum_preserveFormat"
+				android:title="@string/preserve_format" />
+			<CheckBoxPreference
+				android:id="@+id/include_tags"
+				android:key="includeTags"
+			android:dependency="overrideXformSettings"
+				android:title="@string/include_tags"
+				android:summary="@string/sum_includeTags" />
+			<CheckBoxPreference
+				android:key="fillBlanks"
+				android:title="@string/fill_blanks" 
+				android:dependency="overrideXformSettings"
+				android:summary="@string/sum_fillBlanks"
+				android:id="@+id/fill_blanks"/>
+			<CheckBoxPreference
+				android:id="@+id/use_ticks"
+				android:key="useTicks"
+				android:dependency="overrideXformSettings"
+				android:summary="@string/sum_useTicks"
+				android:title="@string/use_ticks" />
+			<EditTextPreference
+				android:id="@+id/tick_symbol"
+				android:key="tickSymbol"
+				android:dependency="useTicks"
+				android:title="@string/tick_symbol"
+				android:summary="@string/sum_tickSymbol"
+				android:dialogMessage="@string/sum_tickSymbol"
+				android:dialogTitle="@string/tick_symbol" />			
+			<EditTextPreference
+				android:id="@+id/delimiter"
+				android:key="delimiter"
+			android:dependency="overrideXformSettings"
+				android:title="@string/delimiter"
+				android:dialogTitle="@string/delimiter"
+				android:summary="@string/sum_delimiter"
+				android:defaultValue="@string/default_delimiter" />					
+	</PreferenceCategory>
+</PreferenceScreen>

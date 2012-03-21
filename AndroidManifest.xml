@@ -106,6 +106,9 @@
 			android:name=".preferences.PreferencesActivity"
 			android:label="@string/app_name" />
 		<activity
+			android:name=".preferences.PreferencesSmsActivity"
+			android:label="@string/app_name" />
+		<activity
 			android:name=".activities.FormHierarchyActivity"
 			android:label="@string/app_name" />
 		<activity
@@ -181,8 +184,8 @@
 		android:smallScreens="true"
 		android:normalScreens="true"
 		android:largeScreens="true"
-		android:xlargeScreens="true"
 		android:anyDensity="true" />
+		<!--android:xlargeScreens="true"-->
 
 
 </manifest>

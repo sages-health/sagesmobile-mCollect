@@ -610,7 +610,7 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
 		String tmpString = "";
 //		String[] s = StringUtils.splitPreserveAllTokens(smsText, null, numSegs);
 //TODO		String[] s = DataChunker.chunkData(smsText);
-		Map<String,String> s = DataChunker.chunkDataWithHeader(smsText, formId);
+		Map<String,String> s = DataChunker.chunkDataWithHeader(smsText/*, formId*/);
 //		while (tmpString >= segSize){
 //			tmpString = smsText.substring(0,segSize - 1);
 //				
@@ -623,6 +623,7 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
 		}*/
 		
 		for (Entry<String,String> entry : s.entrySet()){
+			System.out.println("PAYLOAD:"+entry.getKey() + "," + entry.getValue());
 			dividedText.add(entry.getKey() + entry.getValue());
 		}
 //		dividedText = Arrays.asList(s);

@@ -80,7 +80,6 @@ public class EncryptionUtils {
 	private static final String DATA = "data";
 	private static final String ID = "id";
 	private static final String VERSION = "version";
-	private static final String UI_VERSION = "uiVersion";
 	private static final String ENCRYPTED = "encrypted";
 	private static final String BASE64_ENCRYPTED_KEY = "base64EncryptedKey";
 	private static final String ENCRYPTED_XML_FILE = "encryptedXmlFile";
@@ -96,8 +95,7 @@ public class EncryptionUtils {
 
 	public static final class EncryptedFormInformation {
 		public final String formId;
-		public final Integer modelVersion;
-		public final Integer uiVersion;
+		public final String formVersion;
 		public final InstanceMetadata instanceMetadata;
 		public final PublicKey rsaPublicKey;
 		public final String base64RsaEncryptedSymmetricKey;
@@ -107,11 +105,10 @@ public class EncryptionUtils {
 		public final StringBuilder elementSignatureSource = new StringBuilder();
 		public final Base64Wrapper wrapper;
 
-		EncryptedFormInformation(String formId, Integer modelVersion,
-				Integer uiVersion, InstanceMetadata instanceMetadata, PublicKey rsaPublicKey, Base64Wrapper wrapper) {
+		EncryptedFormInformation(String formId, String formVersion,
+				InstanceMetadata instanceMetadata, PublicKey rsaPublicKey, Base64Wrapper wrapper) {
 			this.formId = formId;
-			this.modelVersion = modelVersion;
-			this.uiVersion = uiVersion;
+			this.formVersion = formVersion;
 			this.instanceMetadata = instanceMetadata;
 			this.rsaPublicKey = rsaPublicKey;
 			this.wrapper = wrapper;
@@ -181,11 +178,8 @@ public class EncryptionUtils {
 			
 			// start building elementSignatureSource...
 			appendElementSignatureSource(formId);
-			if ( modelVersion != null ) {
-				appendElementSignatureSource(modelVersion.toString());
-			}
-			if ( uiVersion != null ) {
-				appendElementSignatureSource(uiVersion.toString());
+			if ( formVersion != null ) {
+				appendElementSignatureSource(formVersion.toString());
 			}
 			appendElementSignatureSource(base64RsaEncryptedSymmetricKey);
 
@@ -211,7 +205,6 @@ public class EncryptionUtils {
 			//      Assumes this is in the order:
 			//			formId
 			//			version   (omitted if null)
-			// 			uiVersion (omitted if null)
 			//			base64RsaEncryptedSymmetricKey
 			//			instanceId
 			//          for each media file { filename "::" md5Hash }
@@ -289,8 +282,7 @@ public class EncryptionUtils {
 		
 		// fetch the form information
 		String formId;
-		Integer modelVersion;
-		Integer uiVersion;
+		String formVersion;
 		PublicKey pk;
 		Base64Wrapper wrapper;
 
@@ -299,6 +291,7 @@ public class EncryptionUtils {
 			if (cr.getType(mUri) == InstanceColumns.CONTENT_ITEM_TYPE) {
 				// chain back to the Form record...
 				String[] selectionArgs = null;
+				String selection = null;
 				Cursor instanceCursor = null;
 				try {
 					instanceCursor = cr.query(mUri, null, null, null, null);
@@ -308,13 +301,19 @@ public class EncryptionUtils {
 					}
 					instanceCursor.moveToFirst();
 					String jrFormId = instanceCursor.getString(instanceCursor.getColumnIndex(InstanceColumns.JR_FORM_ID));
-					selectionArgs = new String[] {jrFormId};
+					int idxJrVersion = instanceCursor.getColumnIndex(InstanceColumns.JR_VERSION);
+					if ( !instanceCursor.isNull(idxJrVersion) ) {
+						selectionArgs = new String[] {jrFormId, instanceCursor.getString(idxJrVersion)};
+						selection = FormsColumns.JR_FORM_ID + " =? AND " + FormsColumns.JR_VERSION + "=?";
+					} else {
+						selectionArgs = new String[] {jrFormId};
+						selection = FormsColumns.JR_FORM_ID + " =? AND " + FormsColumns.JR_VERSION + " IS NULL";
+					}
 				} finally {
 					if ( instanceCursor != null ) {
 						instanceCursor.close();
 					}
 				}
-				String selection = FormsColumns.JR_FORM_ID + " like ?";
 	
 		        formCursor = cr.query(FormsColumns.CONTENT_URI, null, selection, selectionArgs,
 		                null);
@@ -338,13 +337,9 @@ public class EncryptionUtils {
 				Log.e(t, "No FormId specified???");
 				return null;
 			}
-			int idxModelVersion = formCursor.getColumnIndex(FormsColumns.MODEL_VERSION);
-			int idxUiVersion = formCursor.getColumnIndex(FormsColumns.UI_VERSION);
+			int idxVersion = formCursor.getColumnIndex(FormsColumns.JR_VERSION);
 			int idxBase64RsaPublicKey = formCursor.getColumnIndex(FormsColumns.BASE64_RSA_PUBLIC_KEY);
-			modelVersion = formCursor.isNull(idxModelVersion)
-					? null : formCursor.getInt(idxModelVersion);
-			uiVersion = formCursor.isNull(idxUiVersion) 
-					? null : formCursor.getInt(idxUiVersion);
+			formVersion = formCursor.isNull(idxVersion) ? null : formCursor.getString(idxVersion);
 			String base64RsaPublicKey = formCursor.isNull(idxBase64RsaPublicKey) 
 					? null : formCursor.getString(idxBase64RsaPublicKey);
 
@@ -400,7 +395,7 @@ public class EncryptionUtils {
 			return null;
 		}
 
-		return new EncryptedFormInformation(formId, modelVersion, uiVersion, instanceMetadata,
+		return new EncryptedFormInformation(formId, formVersion, instanceMetadata,
 				pk, wrapper);
 	}
 
@@ -592,11 +587,8 @@ public class EncryptionUtils {
 		Element e = d.createElement(XML_ENCRYPTED_TAG_NAMESPACE, DATA);
 		e.setPrefix(null, XML_ENCRYPTED_TAG_NAMESPACE);
 		e.setAttribute(null, ID, formInfo.formId);
-		if ( formInfo.modelVersion != null ) {
-			e.setAttribute(null, VERSION, Integer.toString(formInfo.modelVersion));
-		}
-		if ( formInfo.uiVersion != null ) {
-			e.setAttribute(null,  UI_VERSION, Integer.toString(formInfo.uiVersion));
+		if ( formInfo.formVersion != null ) {
+			e.setAttribute(null, VERSION, formInfo.formVersion);
 		}
 		e.setAttribute(null,  ENCRYPTED, "yes");
 		d.addChild(0, Node.ELEMENT, e);

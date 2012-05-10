@@ -14,6 +14,12 @@
 
 package org.odk.collect.android.activities;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryController;
@@ -82,12 +88,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 
 /**
  * FormEntryActivity is responsible for displaying questions, animating transitions between
@@ -241,8 +241,9 @@ public class FormEntryActivity extends Activity implements AnimationListener, Fo
                 Uri uri = intent.getData();
 
                 if (getContentResolver().getType(uri) == InstanceColumns.CONTENT_ITEM_TYPE) {
-                	// get the formId for this instance...
+                	// get the formId and version for this instance...
                 	String jrFormId = null;
+                	String jrVersion = null;
                 	{
                 		Cursor instanceCursor = null;
                 		try {
@@ -259,6 +260,10 @@ public class FormEntryActivity extends Activity implements AnimationListener, Fo
 		                        jrFormId =
 		                            instanceCursor.getString(instanceCursor
 		                                    .getColumnIndex(InstanceColumns.JR_FORM_ID));
+		                        int idxJrVersion = instanceCursor.getColumnIndex(InstanceColumns.JR_VERSION);
+		                        
+		                        jrVersion = instanceCursor.isNull(idxJrVersion) ? null :
+		                        				instanceCursor.getString(idxJrVersion);
 		                    }
                 		} finally {
                 			if ( instanceCursor != null ) {
@@ -267,10 +272,16 @@ public class FormEntryActivity extends Activity implements AnimationListener, Fo
                 		}
                 	}
                 	
-                    String[] selectionArgs = {
-                        jrFormId
-                    };
-                    String selection = FormsColumns.JR_FORM_ID + " like ?";
+                    String[] selectionArgs;
+                    String selection;
+                    
+                    if ( jrVersion == null ) {
+                    	selectionArgs = new String[]{ jrFormId };
+                    	selection = FormsColumns.JR_FORM_ID + "=? AND " + FormsColumns.JR_VERSION + " IS NULL";
+                    } else {
+                    	selectionArgs = new String[]{ jrFormId, jrVersion };
+                    	selection = FormsColumns.JR_FORM_ID + "=? AND " + FormsColumns.JR_VERSION + "=?";
+                    }
 
                     {
                         Cursor formCursor = null;
@@ -283,11 +294,17 @@ public class FormEntryActivity extends Activity implements AnimationListener, Fo
 	                                formCursor.getString(formCursor
 	                                        .getColumnIndex(FormsColumns.FORM_FILE_PATH));
 	                        } else if (formCursor.getCount() < 1) {
-	                            this.createErrorDialog("Parent form does not exist", EXIT);
+	                            this.createErrorDialog(getString(R.string.parent_form_not_present, jrFormId) + 
+	                            		((jrVersion == null) ? "" : "\n" + getString(R.string.version) + " " + jrVersion), EXIT);
 	                            return;
 	                        } else if (formCursor.getCount() > 1) {
-	                            this.createErrorDialog("More than one possible parent form", EXIT);
-	                            return;
+	                        	// still take the first entry, but warn that there are multiple rows.
+	                        	// user will need to hand-edit the SQLite database to fix it.
+	                        	formCursor.moveToFirst();
+	                            mFormPath =
+		                                formCursor.getString(formCursor
+		                                        .getColumnIndex(FormsColumns.FORM_FILE_PATH));
+	                            this.createErrorDialog("Multiple matching form definitions exist", DO_NOT_EXIT);
 	                        }
                         } finally {
                         	if ( formCursor != null ) {
@@ -686,8 +703,9 @@ public class FormEntryActivity extends Activity implements AnimationListener, Fo
                     ((ImageView) startView.findViewById(R.id.form_start_bling))
                             .setVisibility(View.GONE);
                 } else {
-                    ((ImageView) startView.findViewById(R.id.form_start_bling))
-                            .setImageDrawable(image);
+                    ImageView v = ((ImageView) startView.findViewById(R.id.form_start_bling));
+                    v.setImageDrawable(image);
+                    v.setContentDescription(mFormController.getFormTitle());
                 }
 
                 return startView;

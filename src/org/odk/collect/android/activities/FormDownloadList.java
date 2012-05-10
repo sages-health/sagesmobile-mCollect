@@ -14,6 +14,10 @@
 
 package org.odk.collect.android.activities;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
+
 import org.odk.collect.android.R;
 import org.odk.collect.android.listeners.FormDownloaderListener;
 import org.odk.collect.android.listeners.FormListDownloaderListener;
@@ -51,10 +55,6 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
-
 /**
  * Responsible for displaying, adding and deleting all the valid forms in the forms directory. One
  * caveat. If the server requires authentication, a dialog will pop up asking when you request the
@@ -88,7 +88,7 @@ public class FormDownloadList extends ListActivity implements FormListDownloader
     public static final String LIST_URL = "listurl";
 
     private static final String FORMNAME = "formname";
-    private static final String FORMID = "formid";
+    private static final String FORMDETAIL_KEY = "formdetailkey";
     private static final String FORMID_DISPLAY = "formiddisplay";
 
     private String mAlertMsg;
@@ -233,7 +233,7 @@ public class FormDownloadList extends ListActivity implements FormListDownloader
         }
 
         String[] data = new String[] {
-                FORMNAME, FORMID_DISPLAY, FORMID
+                FORMNAME, FORMID_DISPLAY, FORMDETAIL_KEY
         };
         int[] view = new int[] {
                 R.id.text1, R.id.text2
@@ -255,8 +255,8 @@ public class FormDownloadList extends ListActivity implements FormListDownloader
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-        mDownloadButton.setEnabled(!(selectedItemCount() == 0));
+		super.onListItemClick(l, v, position, id);
+		mDownloadButton.setEnabled(!(selectedItemCount() == 0));
     }
 
 
@@ -437,7 +437,7 @@ public class FormDownloadList extends ListActivity implements FormListDownloader
             if (sba.get(i, false)) {
                 HashMap<String, String> item =
                     (HashMap<String, String>) getListAdapter().getItem(i);
-                filesToDownload.add(mFormNamesAndURLs.get(item.get(FORMID)));
+                filesToDownload.add(mFormNamesAndURLs.get(item.get(FORMDETAIL_KEY)));
             }
         }
         totalCount = filesToDownload.size();
@@ -542,10 +542,14 @@ public class FormDownloadList extends ListActivity implements FormListDownloader
 
             ArrayList<String> ids = new ArrayList<String>(mFormNamesAndURLs.keySet());
             for (int i = 0; i < result.size(); i++) {
+            	String formDetailsKey = ids.get(i);
+            	FormDetails details = mFormNamesAndURLs.get(formDetailsKey);
                 HashMap<String, String> item = new HashMap<String, String>();
-                item.put(FORMNAME, mFormNamesAndURLs.get(ids.get(i)).formName);
-                item.put(FORMID_DISPLAY, "ID: " + mFormNamesAndURLs.get(ids.get(i)).formID);
-                item.put(FORMID, mFormNamesAndURLs.get(ids.get(i)).formID);
+                item.put(FORMNAME, details.formName);
+                item.put(FORMID_DISPLAY, 
+                		((details.formVersion == null) ? "" : (getString(R.string.version) + " " + details.formVersion + " ")) +
+                		"ID: " + details.formID );
+                item.put(FORMDETAIL_KEY, formDetailsKey);
 
                 // Insert the new form in alphabetical order.
                 if (mFormList.size() == 0) {

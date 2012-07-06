@@ -14,6 +14,7 @@
 
 package org.odk.collect.android.widgets;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.javarosa.core.model.SelectChoice;
@@ -47,13 +48,7 @@ import android.widget.RelativeLayout;
  */
 public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnCheckedChangeListener {
 
-    private static final int RANDOM_BUTTON_ID = 4853487;
-    Vector<SelectChoice> mItems;
-
-    Vector<RadioButton> buttons;
-    Vector<MediaLayout> mediaLayouts;
-    Vector<RelativeLayout> parentLayout;
-
+    ArrayList<RadioButton> buttons;
     AdvanceToNextListener listener;
 
 
@@ -62,10 +57,8 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
 
-        mItems = prompt.getSelectChoices();
-        buttons = new Vector<RadioButton>();
-        mediaLayouts = new Vector<MediaLayout>();
-        parentLayout = new Vector<RelativeLayout>();
+        Vector<SelectChoice> mItems = prompt.getSelectChoices();
+        buttons = new ArrayList<RadioButton>();
         listener = (AdvanceToNextListener) context;
 
         String s = null;
@@ -78,7 +71,6 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
 
                 RelativeLayout thisParentLayout =
                     (RelativeLayout) inflater.inflate(R.layout.quick_select_layout, null);
-                parentLayout.add(thisParentLayout);
 
                 LinearLayout questionLayout = (LinearLayout) thisParentLayout.getChildAt(0);
                 ImageView rightArrow = (ImageView) thisParentLayout.getChildAt(1);
@@ -87,7 +79,7 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
                 r.setOnCheckedChangeListener(this);
                 r.setText(prompt.getSelectChoiceText(mItems.get(i)));
                 r.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
-                r.setId(i + RANDOM_BUTTON_ID);
+                r.setId(QuestionWidget.newUniqueId());
                 r.setEnabled(!prompt.isReadOnly());
                 r.setFocusable(!prompt.isReadOnly());
 
@@ -118,16 +110,14 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
 
                 MediaLayout mediaLayout = new MediaLayout(getContext());
                 mediaLayout.setAVT(prompt.getIndex(), r, audioURI, imageURI, videoURI, bigImageURI);
-                questionLayout.addView(mediaLayout);
-                mediaLayouts.add(mediaLayout);
 
-                // Last, add the dividing line (except for the last element)
-                ImageView divider = new ImageView(getContext());
-                divider.setBackgroundResource(android.R.drawable.divider_horizontal_bright);
                 if (i != mItems.size() - 1) {
+	                // Last, add the dividing line (except for the last element)
+	                ImageView divider = new ImageView(getContext());
+	                divider.setBackgroundResource(android.R.drawable.divider_horizontal_bright);
                     mediaLayout.addDivider(divider);
                 }
-
+                questionLayout.addView(mediaLayout);
                 addView(thisParentLayout);
             }
         }
@@ -151,7 +141,7 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
         if (i == -1) {
             return null;
         } else {
-            SelectChoice sc = mItems.elementAt(i - RANDOM_BUTTON_ID);
+            SelectChoice sc = mPrompt.getSelectChoices().elementAt(i);
             return new SelectOneData(new Selection(sc));
         }
     }
@@ -167,9 +157,10 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
 
 
     public int getCheckedId() {
-        for (RadioButton button : this.buttons) {
+    	for (int i = 0; i < buttons.size(); ++i) {
+    		RadioButton button = buttons.get(i);
             if (button.isChecked()) {
-                return button.getId();
+                return i;
             }
         }
         return -1;

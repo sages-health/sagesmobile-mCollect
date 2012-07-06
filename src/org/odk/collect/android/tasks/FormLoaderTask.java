@@ -165,10 +165,9 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         }
 
         // new evaluation context for function handlers
-        EvaluationContext ec = new EvaluationContext();
-        fd.setEvaluationContext(ec);
+		fd.setEvaluationContext(new EvaluationContext(null));
 
-        // create FormEntryController from formdef
+		// create FormEntryController from formdef
         FormEntryModel fem = new FormEntryModel(fd);
         fec = new FormEntryController(fem);
 
@@ -203,6 +202,8 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         // Set jr://... to point to /sdcard/odk/forms/filename-media/
         ReferenceManager._().addSessionRootTranslator(
             new RootTranslator("jr://images/", "jr://file/forms/" + formFileName + "-media/"));
+        ReferenceManager._().addSessionRootTranslator(
+                new RootTranslator("jr://image/", "jr://file/forms/" + formFileName + "-media/"));
         ReferenceManager._().addSessionRootTranslator(
             new RootTranslator("jr://audio/", "jr://file/forms/" + formFileName + "-media/"));
         ReferenceManager._().addSessionRootTranslator(

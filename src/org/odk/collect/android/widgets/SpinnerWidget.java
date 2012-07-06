@@ -24,6 +24,8 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,6 +46,7 @@ public class SpinnerWidget extends QuestionWidget {
     Vector<SelectChoice> mItems;
     Spinner spinner;
     String[] choices;
+    private static int BROWN = 0xFF936931;
 
 
     public SpinnerWidget(Context context, FormEntryPrompt prompt) {
@@ -51,11 +54,11 @@ public class SpinnerWidget extends QuestionWidget {
 
         mItems = prompt.getSelectChoices();
         spinner = new Spinner(context);
-        choices = new String[mItems.size()];
-
+        choices = new String[mItems.size()+1];
         for (int i = 0; i < mItems.size(); i++) {
             choices[i] = prompt.getSelectChoiceText(mItems.get(i));
         }
+        choices[mItems.size()] = getContext().getString(R.string.select_one);
 
         // The spinner requires a custom adapter. It is defined below
         SpinnerAdapter adapter =
@@ -73,13 +76,13 @@ public class SpinnerWidget extends QuestionWidget {
             s = ((Selection) prompt.getAnswerValue().getValue()).getValue();
         }
 
+        spinner.setSelection(mItems.size());
         if (s != null) {
             for (int i = 0; i < mItems.size(); ++i) {
                 String sMatch = mItems.get(i).getValue();
                 if (sMatch.equals(s)) {
                     spinner.setSelection(i);
                 }
-
             }
         }
 
@@ -90,11 +93,12 @@ public class SpinnerWidget extends QuestionWidget {
 
     @Override
     public IAnswerData getAnswer() {
+    	clearFocus();
         int i = spinner.getSelectedItemPosition();
-        if (i == -1) {
+        if (i == -1 || i == mItems.size()) {
             return null;
         } else {
-            SelectChoice sc = mItems.elementAt(i); // - RANDOM_BUTTON_ID);
+            SelectChoice sc = mItems.elementAt(i);
             return new SelectOneData(new Selection(sc));
         }
     }
@@ -104,8 +108,7 @@ public class SpinnerWidget extends QuestionWidget {
     public void clearAnswer() {
         // It seems that spinners cannot return a null answer. This resets the answer
         // to its original value, but it is not null.
-        spinner.setSelection(0);
-
+        spinner.setSelection(mItems.size());
     }
 
 
@@ -146,9 +149,22 @@ public class SpinnerWidget extends QuestionWidget {
             }
 
             TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
-            tv.setText(items[position]);
             tv.setTextSize(textUnit, textSize);
-            tv.setPadding(10, 10, 10, 10); // Are these values OK?
+            tv.setBackgroundColor(Color.WHITE);
+        	tv.setPadding(10, 10, 10, 10); // Are these values OK?
+            if (position == items.length-1) {
+            	tv.setText(parent.getContext().getString(R.string.clear_answer));
+            	tv.setTextColor(BROWN);
+        		tv.setTypeface(null, Typeface.NORMAL);
+            	if (spinner.getSelectedItemPosition() == position) {
+            		tv.setBackgroundColor(Color.LTGRAY);
+            	}
+            } else {
+                tv.setText(items[position]);
+                tv.setTextColor(Color.BLACK);
+            	tv.setTypeface(null, (spinner.getSelectedItemPosition() == position) 
+            							? Typeface.BOLD : Typeface.NORMAL);
+            }
             return convertView;
         }
 
@@ -163,6 +179,12 @@ public class SpinnerWidget extends QuestionWidget {
             TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
             tv.setText(items[position]);
             tv.setTextSize(textUnit, textSize);
+            tv.setTextColor(Color.BLACK);
+        	tv.setTypeface(null, Typeface.BOLD);
+            if (position == items.length-1) {
+            	tv.setTextColor(BROWN);
+            	tv.setTypeface(null, Typeface.NORMAL);
+            }
             return convertView;
         }
 

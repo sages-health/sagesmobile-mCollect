@@ -55,6 +55,7 @@ public class InstanceUploaderList extends ListActivity implements OnLongClickLis
     private static final String BUNDLE_TOGGLED_KEY = "toggled";
 
     private static final int MENU_PREFERENCES = Menu.FIRST;
+    private static final int MENU_SHOW_UNSENT = Menu.FIRST+1;
     private static final int INSTANCE_UPLOADER = 0;
 
     private Button mUploadButton;
@@ -224,6 +225,8 @@ public class InstanceUploaderList extends ListActivity implements OnLongClickLis
         super.onCreateOptionsMenu(menu);
         menu.add(0, MENU_PREFERENCES, 0, getString(R.string.general_preferences)).setIcon(
             android.R.drawable.ic_menu_preferences);
+        menu.add(0, MENU_SHOW_UNSENT, 1, getString(R.string.change_view)).setIcon(
+            android.R.drawable.ic_menu_preferences);
         return true;
     }
 
@@ -235,6 +238,10 @@ public class InstanceUploaderList extends ListActivity implements OnLongClickLis
                 Collect.getInstance().getActivityLogger().logAction(this, "onMenuItemSelected", "MENU_PREFERENCES");
                 createPreferencesMenu();
                 return true;
+            case MENU_SHOW_UNSENT:
+                Collect.getInstance().getActivityLogger().logAction(this, "onMenuItemSelected", "MENU_SHOW_UNSENT");
+      		showSentAndUnsentChoices();
+            	return true;
         }
         return super.onMenuItemSelected(featureId, item);
     }
@@ -344,8 +351,11 @@ public class InstanceUploaderList extends ListActivity implements OnLongClickLis
 
 	@Override
 	public boolean onLongClick(View v) {
-        Collect.getInstance().getActivityLogger().logAction(this, "toggleButton.longClick", Boolean.toString(!mShowUnsent));
-
+            Collect.getInstance().getActivityLogger().logAction(this, "toggleButton.longClick", Boolean.toString(!mShowUnsent));
+            return showSentAndUnsentChoices();
+	}
+	
+	private boolean showSentAndUnsentChoices() {
         /**
 	     * Create a dialog with options to save and exit, save, or quit without saving
 	     */

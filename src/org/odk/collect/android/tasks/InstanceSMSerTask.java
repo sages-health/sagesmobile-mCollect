@@ -25,12 +25,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.cookie.SM;
 import org.apache.http.protocol.HttpContext;
 import org.jhuapl.edu.sages.sandbox.xformparser.SAXParseSMS;
 import org.odk.collect.android.R;
@@ -61,7 +64,8 @@ import android.webkit.MimeTypeMap;
 public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, String>> {
 
     private static String t = "InstanceSMSerTask";
-    private static final int MULTIPART_SMS_SIZE = 100;
+    private static int MULTIPART_SMS_SIZE = 70;
+    private static int ENCODING_SMS_SIZE = 50;
     private InstanceSMSerListener mStateListener;
     private static final int CONNECTION_TIMEOUT = 30000;
     private static final String fail = "FAILED: ";
@@ -360,11 +364,16 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     } catch (Exception e){
                     	
                     }
-                    
+            		Pattern pattern = Pattern.compile("([\\P{InBasic Latin}]+)");
+            		Matcher matcher = pattern.matcher(smsText);
+            		boolean containsUnicode = matcher.find();
+					System.out.println("did it match? " + containsUnicode);
+
+            		
                     int blobLength = smsText.length();
                     ArrayList<String> dividedBlob = null;
                     
-                    if (blobLength > 160){
+                    if (blobLength > 160 || containsUnicode) {
                     	if ("multisms".equals(formId)){
                     		smsText.replaceFirst(formId, "");
                     	} else {
@@ -374,7 +383,18 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     	try {
 //                    	dividedBlob = divideText(smsText, 100);
                     	//MULTIPART_SMS_SIZE == 100;
-                    	dividedBlob = divideTextAddHeader(smsText, MULTIPART_SMS_SIZE, formId);
+                    	if (containsUnicode){
+                    		Log.d(t, "Text has special characters beyone US ASCII. NEED TO SHRINK MSG.");
+                    		Log.d(t, "Text length= " + smsText.length());
+                    		MULTIPART_SMS_SIZE = 70;
+                    		ENCODING_SMS_SIZE = 50;
+                    	} else {
+                    		Log.d(t, "GOOD NO special characters beyone US ASCII. SEND BIG FAT MSG.");
+                    		Log.d(t, "Text length= " + smsText.length());
+                    		MULTIPART_SMS_SIZE = 120;
+                    		ENCODING_SMS_SIZE = 70;
+                    	}
+                    	dividedBlob = divideTextAddHeader(smsText, MULTIPART_SMS_SIZE, ENCODING_SMS_SIZE, formId);
                     	} catch (Exception e){
                     		e.printStackTrace();
                     		Log.e(t + ".divideTextAddHeader", e.getMessage());
@@ -538,6 +558,7 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
 
                 
                 // if it got here, it must have worked
+//                mResults.put(id + "," + txIdCur , Collect.getInstance().getString(R.string.success));
                 mResults.put(id, Collect.getInstance().getString(R.string.success));
                 cv.put(InstanceColumns.STATUS, InstanceProviderAPI.STATUS_SUBMITTED);
                 Collect.getInstance().getContentResolver().update(toUpdate, cv, null, null);
@@ -597,20 +618,27 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
 		return new ArrayList<String>(dividedText);
 	}
 	
+	private String txIdCur = null;
 	/**
 	 * @param smsText
 	 * @param i
 	 */
-	private ArrayList<String> divideTextAddHeader(String smsText, int segSize, String formId) {
+	private ArrayList<String> divideTextAddHeader(String smsText, int segSize, int allowedInfoSize, String formId) {
 		ArrayList<String> dividedText = new ArrayList<String>();
 		int numSegs = (int) Math.round(smsText.length() / (double) segSize);
 		int start = 0;
 		int end = segSize -1;
+		//int allowedInfoSize = 130;
 		
 		String tmpString = "";
 //		String[] s = StringUtils.splitPreserveAllTokens(smsText, null, numSegs);
 //TODO		String[] s = DataChunker.chunkData(smsText);
-		Map<String,String> s = DataChunker.chunkDataWithHeader(smsText/*, formId*/);
+		Log.d("chunk before", "txidcur=" + txIdCur);
+		DataChunker dchunker = new DataChunker();
+		Map<String,String> s = dchunker.chunkDataWithHeaderGo(smsText, segSize, allowedInfoSize /*formId*/);
+//		Map<String,String> s = DataChunker.chunkDataWithHeader(smsText, txIdCur/*, formId*/);
+		txIdCur = dchunker.getTxId();
+		Log.d("chunk after", "txidcur=" + txIdCur);
 //		while (tmpString >= segSize){
 //			tmpString = smsText.substring(0,segSize - 1);
 //				

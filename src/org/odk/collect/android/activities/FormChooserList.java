@@ -19,6 +19,7 @@ import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.listeners.DiskSyncListener;
 import org.odk.collect.android.provider.FormsProviderAPI.FormsColumns;
 import org.odk.collect.android.tasks.DiskSyncTask;
+import org.odk.collect.android.utilities.VersionHidingCursorAdapter;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -45,14 +46,12 @@ import android.widget.TextView;
 public class FormChooserList extends ListActivity implements DiskSyncListener {
 
     private static final String t = "FormChooserList";
+    private static final boolean EXIT = true;
+    private static final String syncMsgKey = "syncmsgkey";
+
     private DiskSyncTask mDiskSyncTask;
 
-    private static final boolean EXIT = true;
-
     private AlertDialog mAlertDialog;
-
-    private final String syncMsgKey = "syncmsgkey";
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,6 +68,26 @@ public class FormChooserList extends ListActivity implements DiskSyncListener {
         setContentView(R.layout.chooser_list_layout);
         setTitle(getString(R.string.app_name) + " > " + getString(R.string.enter_data));
 
+        String sortOrder = FormsColumns.DISPLAY_NAME + " ASC, " + FormsColumns.JR_VERSION + " DESC";
+        Cursor c = managedQuery(FormsColumns.CONTENT_URI, null, null, null, sortOrder);
+
+        String[] data = new String[] {
+                FormsColumns.DISPLAY_NAME, FormsColumns.DISPLAY_SUBTEXT, FormsColumns.JR_VERSION
+        };
+        int[] view = new int[] {
+                R.id.text1, R.id.text2, R.id.text3
+        };
+
+        // render total instance view
+        SimpleCursorAdapter instances =
+            new VersionHidingCursorAdapter(FormsColumns.JR_VERSION, this, R.layout.two_item, c, data, view);
+        setListAdapter(instances);
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(syncMsgKey)) {
+            TextView tv = (TextView) findViewById(R.id.status_text);
+            tv.setText(savedInstanceState.getString(syncMsgKey));
+        }
+
         // DiskSyncTask checks the disk for any forms not already in the content provider
         // that is, put here by dragging and dropping onto the SDCard
         mDiskSyncTask = (DiskSyncTask) getLastNonConfigurationInstance();
@@ -77,29 +96,6 @@ public class FormChooserList extends ListActivity implements DiskSyncListener {
             mDiskSyncTask = new DiskSyncTask();
             mDiskSyncTask.setDiskSyncListener(this);
             mDiskSyncTask.execute((Void[]) null);
-        }
-
-        if (mDiskSyncTask.getStatus() == AsyncTask.Status.FINISHED) {
-            mDiskSyncTask.setDiskSyncListener(null);
-        }
-
-        Cursor c = managedQuery(FormsColumns.CONTENT_URI, null, null, null, null);
-
-        String[] data = new String[] {
-                FormsColumns.DISPLAY_NAME, FormsColumns.DISPLAY_SUBTEXT
-        };
-        int[] view = new int[] {
-                R.id.text1, R.id.text2
-        };
-
-        // render total instance view
-        SimpleCursorAdapter instances =
-            new SimpleCursorAdapter(this, R.layout.two_item, c, data, view);
-        setListAdapter(instances);
-
-        if (savedInstanceState != null && savedInstanceState.containsKey(syncMsgKey)) {
-            TextView tv = (TextView) findViewById(R.id.status_text);
-            tv.setText(savedInstanceState.getString(syncMsgKey));
         }
     }
 
@@ -125,11 +121,10 @@ public class FormChooserList extends ListActivity implements DiskSyncListener {
     @Override
     protected void onListItemClick(ListView listView, View view, int position, long id) {
         // get uri to form
-        Cursor c = (Cursor) getListAdapter().getItem(position);
-        startManagingCursor(c);
-        Uri formUri =
-            ContentUris.withAppendedId(FormsColumns.CONTENT_URI,
-                c.getLong(c.getColumnIndex(FormsColumns._ID)));
+    	long idFormsTable = ((SimpleCursorAdapter) getListAdapter()).getItemId(position);
+        Uri formUri = ContentUris.withAppendedId(FormsColumns.CONTENT_URI, idFormsTable);
+
+		Collect.getInstance().getActivityLogger().logAction(this, "onListItemClick", formUri.toString());
 
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action)) {
@@ -148,6 +143,10 @@ public class FormChooserList extends ListActivity implements DiskSyncListener {
     protected void onResume() {
         mDiskSyncTask.setDiskSyncListener(this);
         super.onResume();
+
+        if (mDiskSyncTask.getStatus() == AsyncTask.Status.FINISHED) {
+        	SyncComplete(mDiskSyncTask.getStatusMessage());
+        }
     }
 
 
@@ -157,7 +156,20 @@ public class FormChooserList extends ListActivity implements DiskSyncListener {
         super.onPause();
     }
 
-
+	
+    @Override
+    protected void onStart() {
+    	super.onStart();
+		Collect.getInstance().getActivityLogger().logOnStart(this); 
+    }
+    
+    @Override
+    protected void onStop() {
+		Collect.getInstance().getActivityLogger().logOnStop(this); 
+    	super.onStop();
+    }
+    
+    
     /**
      * Called by DiskSyncTask when the task is finished
      */
@@ -177,6 +189,9 @@ public class FormChooserList extends ListActivity implements DiskSyncListener {
      * @param shouldExit
      */
     private void createErrorDialog(String errorMsg, final boolean shouldExit) {
+
+    	Collect.getInstance().getActivityLogger().logAction(this, "createErrorDialog", "show");
+
         mAlertDialog = new AlertDialog.Builder(this).create();
         mAlertDialog.setIcon(android.R.drawable.ic_dialog_info);
         mAlertDialog.setMessage(errorMsg);
@@ -185,6 +200,8 @@ public class FormChooserList extends ListActivity implements DiskSyncListener {
             public void onClick(DialogInterface dialog, int i) {
                 switch (i) {
                     case DialogInterface.BUTTON1:
+                    	Collect.getInstance().getActivityLogger().logAction(this, "createErrorDialog", 
+                    			shouldExit ? "exitApplication" : "OK");
                         if (shouldExit) {
                             finish();
                         }

@@ -17,14 +17,18 @@ package org.odk.collect.android.widgets;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.form.api.FormEntryPrompt;
+import org.odk.collect.android.application.Collect;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.text.method.TextKeyListener.Capitalize;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.TableLayout;
 
 /**
  * The most basic widget that allows for entry of any text.
@@ -37,13 +41,23 @@ public class StringWidget extends QuestionWidget {
     boolean mReadOnly = false;
     protected EditText mAnswer;
 
-
     public StringWidget(Context context, FormEntryPrompt prompt) {
+    	this(context, prompt, true);
+    	setupChangeListener();
+    }
+    
+    protected StringWidget(Context context, FormEntryPrompt prompt, boolean derived) {
         super(context, prompt);
         mAnswer = new EditText(context);
+        mAnswer.setId(QuestionWidget.newUniqueId());
+        mReadOnly = prompt.isReadOnly();
 
         mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
 
+        TableLayout.LayoutParams params = new TableLayout.LayoutParams();
+        params.setMargins(7, 5, 7, 5);
+        mAnswer.setLayoutParams(params);
+        
         // capitalize the first letter of the sentence
         mAnswer.setKeyListener(new TextKeyListener(Capitalize.SENTENCES, false));
 
@@ -51,23 +65,43 @@ public class StringWidget extends QuestionWidget {
         mAnswer.setHorizontallyScrolling(false);
         mAnswer.setSingleLine(false);
 
-        if (prompt != null) {
-            mReadOnly = prompt.isReadOnly();
-            String s = prompt.getAnswerText();
-            if (s != null) {
-                mAnswer.setText(s);
-            }
-
-            if (mReadOnly) {
-                mAnswer.setBackgroundDrawable(null);
-                mAnswer.setFocusable(false);
-                mAnswer.setClickable(false);
-            }
+        String s = prompt.getAnswerText();
+        if (s != null) {
+            mAnswer.setText(s);
         }
 
+        if (mReadOnly) {
+            mAnswer.setBackgroundDrawable(null);
+            mAnswer.setFocusable(false);
+            mAnswer.setClickable(false);
+        }
+        
         addView(mAnswer);
     }
 
+    protected void setupChangeListener() {
+        mAnswer.addTextChangedListener(new TextWatcher() {
+        	private String oldText = "";
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				if (!s.toString().equals(oldText)) {
+					Collect.getInstance().getActivityLogger()
+						.logInstanceAction(this, "answerTextChanged", s.toString(),	getPrompt().getIndex());
+				}
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				oldText = s.toString();
+			}
+			
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) { }				
+        });
+    }
 
     @Override
     public void clearAnswer() {
@@ -77,7 +111,8 @@ public class StringWidget extends QuestionWidget {
 
     @Override
     public IAnswerData getAnswer() {
-        String s = mAnswer.getText().toString();
+    	clearFocus();
+    	String s = mAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;
         } else {

@@ -14,8 +14,8 @@
 
 package org.odk.collect.android.tasks;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.protocol.HttpContext;
+import org.opendatakit.httpclientandroidlib.client.HttpClient;
+import org.opendatakit.httpclientandroidlib.protocol.HttpContext;
 import org.javarosa.xform.parse.XFormParser;
 import org.kxml2.kdom.Element;
 import org.odk.collect.android.R;
@@ -66,10 +66,12 @@ public class DownloadFormListTask extends AsyncTask<Void, String, HashMap<String
         String downloadListUrl =
             settings.getString(PreferencesActivity.KEY_SERVER_URL,
                 Collect.getInstance().getString(R.string.default_server_url));
-        String downloadPath =
-            settings.getString(PreferencesActivity.KEY_FORMLIST_URL, "/formlist");
+        // NOTE: /formlist must not be translated! It is the well-known path on the server.
+        String downloadPath = settings.getString(PreferencesActivity.KEY_FORMLIST_URL, "/formlist");
         downloadListUrl += downloadPath;
         
+    	Collect.getInstance().getActivityLogger().logAction(this, "formList", downloadListUrl);
+
         // We populate this with available forms from the specified server.
         // <formname, details>
         HashMap<String, FormDetails> formList = new HashMap<String, FormDetails>();
@@ -133,6 +135,7 @@ public class DownloadFormListTask extends AsyncTask<Void, String, HashMap<String
                 // this is something we know how to interpret
                 String formId = null;
                 String formName = null;
+                String version = null;
                 String majorMinorVersion = null;
                 String description = null;
                 String downloadUrl = null;
@@ -159,6 +162,11 @@ public class DownloadFormListTask extends AsyncTask<Void, String, HashMap<String
                         formName = XFormParser.getXMLText(child, true);
                         if (formName != null && formName.length() == 0) {
                             formName = null;
+                        }
+                    } else if (tag.equals("version")) {
+                        version = XFormParser.getXMLText(child, true);
+                        if (version != null && version.length() == 0) {
+                        	version = null;
                         }
                     } else if (tag.equals("majorMinorVersion")) {
                         majorMinorVersion = XFormParser.getXMLText(child, true);
@@ -194,45 +202,14 @@ public class DownloadFormListTask extends AsyncTask<Void, String, HashMap<String
                             R.string.parse_openrosa_formlist_failed, error)));
                     return formList;
                 }
-                /*
-                 * TODO: We currently don't care about major/minor version. maybe someday we will.
-                 */
-                // Integer modelVersion = null;
-                // Integer uiVersion = null;
-                // try {
-                // if (majorMinorVersion == null || majorMinorVersion.length() == 0) {
-                // modelVersion = null;
-                // uiVersion = null;
-                // } else {
-                // int idx = majorMinorVersion.indexOf(".");
-                // if (idx == -1) {
-                // modelVersion = Integer.parseInt(majorMinorVersion);
-                // uiVersion = null;
-                // } else {
-                // modelVersion = Integer.parseInt(majorMinorVersion.substring(0, idx));
-                // uiVersion =
-                // (idx == majorMinorVersion.length() - 1) ? null : Integer
-                // .parseInt(majorMinorVersion.substring(idx + 1));
-                // }
-                // }
-                // } catch (Exception e) {
-                // e.printStackTrace();
-                // String error = "Forms list entry " + Integer.toString(i) +
-                // " has an invalid majorMinorVersion: " + majorMinorVersion;
-                // Log.e(t, "Parsing OpenRosa reply -- " + error);
-                // formList.clear();
-                // formList.put(DL_ERROR_MSG, new FormDetails(
-                // Collect.getInstance().getString(R.string.parse_openrosa_formlist_failed,
-                // error)));
-                // return formList;
-                // }
-                formList.put(formId, new FormDetails(formName, downloadUrl, manifestUrl, formId));
+                formList.put(formId, new FormDetails(formName, downloadUrl, manifestUrl, formId, (version != null) ? version : majorMinorVersion));
             }
         } else {
             // Aggregate 0.9.x mode...
             // populate HashMap with form names and urls
             Element formsElement = result.doc.getRootElement();
             int formsCount = formsElement.getChildCount();
+            String formId = null;
             for (int i = 0; i < formsCount; ++i) {
                 if (formsElement.getType(i) != Element.ELEMENT) {
                     // whitespace
@@ -240,7 +217,6 @@ public class DownloadFormListTask extends AsyncTask<Void, String, HashMap<String
                 }
                 Element child = formsElement.getElement(i);
                 String tag = child.getName();
-                String formId = null;
                 if (tag.equals("formID")) {
                     formId = XFormParser.getXMLText(child, true);
                     if (formId != null && formId.length() == 0) {
@@ -269,7 +245,9 @@ public class DownloadFormListTask extends AsyncTask<Void, String, HashMap<String
                                 R.string.parse_legacy_formlist_failed, error)));
                         return formList;
                     }
-                    formList.put(formId, new FormDetails(formName, downloadUrl, null, formId));
+                    formList.put(formName, new FormDetails(formName, downloadUrl, null, formId, null));
+                    
+                    formId = null;
                 }
             }
         }

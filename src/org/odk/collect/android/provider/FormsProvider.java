@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2007 The Android Open Source Project
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -14,9 +14,18 @@
 
 package org.odk.collect.android.provider;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+
+import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.database.ODKSQLiteOpenHelper;
 import org.odk.collect.android.provider.FormsProviderAPI.FormsColumns;
 import org.odk.collect.android.utilities.FileUtils;
+import org.odk.collect.android.utilities.MediaUtils;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -30,20 +39,15 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-
 /**
- * 
+ *
  */
 public class FormsProvider extends ContentProvider {
 
     private static final String t = "FormsProvider";
 
     private static final String DATABASE_NAME = "forms.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
     private static final String FORMS_TABLE_NAME = "forms";
 
     private static HashMap<String, String> sFormsProjectionMap;
@@ -57,37 +61,119 @@ public class FormsProvider extends ContentProvider {
      * This class helps open, create, and upgrade the database file.
      */
     private static class DatabaseHelper extends ODKSQLiteOpenHelper {
+        // These exist in database versions 2 and 3, but not in 4...
+        private static final String TEMP_FORMS_TABLE_NAME = "forms_v4";
+        private static final String MODEL_VERSION = "modelVersion";
 
         DatabaseHelper(String databaseName) {
-            super("/sdcard/odk/metadata", databaseName, null, DATABASE_VERSION);
+            super(Collect.METADATA_PATH, databaseName, null, DATABASE_VERSION);
         }
 
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE " + FORMS_TABLE_NAME + " (" + FormsColumns._ID
-                    + " integer primary key, " + FormsColumns.DISPLAY_NAME + " text not null, "
-                    + FormsColumns.DISPLAY_SUBTEXT + " text not null, " + FormsColumns.DESCRIPTION
-                    + " text, " + FormsColumns.JR_FORM_ID + " text not null, "
-                    + FormsColumns.MODEL_VERSION + " integer, " + FormsColumns.UI_VERSION
-                    + " integer, "
-                    + FormsColumns.MD5_HASH
-                    + " text not null, "
-                    + FormsColumns.DATE
-                    + " integer not null, " // milliseconds
+        	onCreateNamed(db, FORMS_TABLE_NAME);
+        }
+
+        private void onCreateNamed(SQLiteDatabase db, String tableName) {
+            db.execSQL("CREATE TABLE " + tableName + " ("
+            		+ FormsColumns._ID + " integer primary key, "
+            		+ FormsColumns.DISPLAY_NAME + " text not null, "
+                    + FormsColumns.DISPLAY_SUBTEXT + " text not null, "
+                    + FormsColumns.DESCRIPTION + " text, "
+                    + FormsColumns.JR_FORM_ID + " text not null, "
+                    + FormsColumns.JR_VERSION + " text, "
+                    + FormsColumns.MD5_HASH + " text not null, "
+                    + FormsColumns.DATE + " integer not null, " // milliseconds
                     + FormsColumns.FORM_MEDIA_PATH + " text not null, "
-                    + FormsColumns.FORM_FILE_PATH + " text not null, " + FormsColumns.LANGUAGE
-                    + " text, " + FormsColumns.SUBMISSION_URI + " text, "
+                    + FormsColumns.FORM_FILE_PATH + " text not null, "
+                    + FormsColumns.LANGUAGE + " text, "
+                    + FormsColumns.SUBMISSION_URI + " text, "
+                    + FormsColumns.BASE64_RSA_PUBLIC_KEY + " text, "
                     + FormsColumns.JRCACHE_FILE_PATH + " text not null );");
         }
 
-
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(t, "Upgrading database from version " + oldVersion + " to " + newVersion
-                    + ", which will destroy all old data");
-            db.execSQL("DROP TABLE IF EXISTS forms");
-            onCreate(db);
+        	int initialVersion = oldVersion;
+        	if ( oldVersion < 2 ) {
+                Log.w(t, "Upgrading database from version " + oldVersion + " to " + newVersion
+                        + ", which will destroy all old data");
+                db.execSQL("DROP TABLE IF EXISTS " + FORMS_TABLE_NAME);
+                onCreate(db);
+                return;
+        	} else {
+        		// adding BASE64_RSA_PUBLIC_KEY and changing type and name of integer MODEL_VERSION to text VERSION
+                db.execSQL("DROP TABLE IF EXISTS " + TEMP_FORMS_TABLE_NAME);
+                onCreateNamed(db, TEMP_FORMS_TABLE_NAME);
+        		db.execSQL("INSERT INTO " + TEMP_FORMS_TABLE_NAME + " ("
+                		+ FormsColumns._ID + ", "
+                		+ FormsColumns.DISPLAY_NAME + ", "
+                        + FormsColumns.DISPLAY_SUBTEXT + ", "
+                        + FormsColumns.DESCRIPTION + ", "
+                        + FormsColumns.JR_FORM_ID + ", "
+                        + FormsColumns.MD5_HASH + ", "
+                        + FormsColumns.DATE + ", " // milliseconds
+                        + FormsColumns.FORM_MEDIA_PATH + ", "
+                        + FormsColumns.FORM_FILE_PATH + ", "
+                        + FormsColumns.LANGUAGE + ", "
+                        + FormsColumns.SUBMISSION_URI + ", "
+                        + FormsColumns.JR_VERSION + ", "
+                        + ((oldVersion != 3) ? "" : (FormsColumns.BASE64_RSA_PUBLIC_KEY + ", "))
+                        + FormsColumns.JRCACHE_FILE_PATH + ") SELECT "
+                		+ FormsColumns._ID + ", "
+                		+ FormsColumns.DISPLAY_NAME + ", "
+                        + FormsColumns.DISPLAY_SUBTEXT + ", "
+                        + FormsColumns.DESCRIPTION + ", "
+                        + FormsColumns.JR_FORM_ID + ", "
+                        + FormsColumns.MD5_HASH + ", "
+                        + FormsColumns.DATE + ", " // milliseconds
+                        + FormsColumns.FORM_MEDIA_PATH + ", "
+                        + FormsColumns.FORM_FILE_PATH + ", "
+                        + FormsColumns.LANGUAGE + ", "
+                        + FormsColumns.SUBMISSION_URI + ", "
+                        + "CASE WHEN " + MODEL_VERSION + " IS NOT NULL THEN " +
+                        			"CAST(" + MODEL_VERSION + " AS TEXT) ELSE NULL END, "
+                        + ((oldVersion != 3) ? "" : (FormsColumns.BASE64_RSA_PUBLIC_KEY + ", "))
+                        + FormsColumns.JRCACHE_FILE_PATH + " FROM " + FORMS_TABLE_NAME);
+
+        		// risky failures here...
+        		db.execSQL("DROP TABLE IF EXISTS " + FORMS_TABLE_NAME);
+        		onCreateNamed(db, FORMS_TABLE_NAME);
+        		db.execSQL("INSERT INTO " + FORMS_TABLE_NAME + " ("
+                		+ FormsColumns._ID + ", "
+                		+ FormsColumns.DISPLAY_NAME + ", "
+                        + FormsColumns.DISPLAY_SUBTEXT + ", "
+                        + FormsColumns.DESCRIPTION + ", "
+                        + FormsColumns.JR_FORM_ID + ", "
+                        + FormsColumns.MD5_HASH + ", "
+                        + FormsColumns.DATE + ", " // milliseconds
+                        + FormsColumns.FORM_MEDIA_PATH + ", "
+                        + FormsColumns.FORM_FILE_PATH + ", "
+                        + FormsColumns.LANGUAGE + ", "
+                        + FormsColumns.SUBMISSION_URI + ", "
+                        + FormsColumns.JR_VERSION + ", "
+                        + FormsColumns.BASE64_RSA_PUBLIC_KEY + ", "
+                        + FormsColumns.JRCACHE_FILE_PATH + ") SELECT "
+                		+ FormsColumns._ID + ", "
+                		+ FormsColumns.DISPLAY_NAME + ", "
+                        + FormsColumns.DISPLAY_SUBTEXT + ", "
+                        + FormsColumns.DESCRIPTION + ", "
+                        + FormsColumns.JR_FORM_ID + ", "
+                        + FormsColumns.MD5_HASH + ", "
+                        + FormsColumns.DATE + ", " // milliseconds
+                        + FormsColumns.FORM_MEDIA_PATH + ", "
+                        + FormsColumns.FORM_FILE_PATH + ", "
+                        + FormsColumns.LANGUAGE + ", "
+                        + FormsColumns.SUBMISSION_URI + ", "
+                        + FormsColumns.JR_VERSION + ", "
+                        + FormsColumns.BASE64_RSA_PUBLIC_KEY + ", "
+                        + FormsColumns.JRCACHE_FILE_PATH + " FROM " + TEMP_FORMS_TABLE_NAME);
+        		db.execSQL("DROP TABLE IF EXISTS " + TEMP_FORMS_TABLE_NAME);
+
+	            Log.w(t, "Successfully upgraded database from version " + initialVersion + " to " + newVersion
+	                    + ", without destroying all the old data");
+        	}
         }
     }
 
@@ -96,6 +182,10 @@ public class FormsProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+
+        // must be at the beginning of any activity that can be called from an external intent
+        Collect.createODKDirs();
+
         mDbHelper = new DatabaseHelper(DATABASE_NAME);
         return true;
     }
@@ -147,7 +237,7 @@ public class FormsProvider extends ContentProvider {
 
 
     @Override
-    public Uri insert(Uri uri, ContentValues initialValues) {
+    public synchronized Uri insert(Uri uri, ContentValues initialValues) {
         // Validate the requested uri
         if (sUriMatcher.match(uri) != FORMS) {
             throw new IllegalArgumentException("Unknown URI " + uri);
@@ -160,6 +250,17 @@ public class FormsProvider extends ContentProvider {
             values = new ContentValues();
         }
 
+        if (!values.containsKey(FormsColumns.FORM_FILE_PATH)) {
+        	throw new IllegalArgumentException(FormsColumns.FORM_FILE_PATH + " must be specified.");
+        }
+
+        // Normalize the file path.
+        // (don't trust the requester).
+        String filePath = values.getAsString(FormsColumns.FORM_FILE_PATH);
+        File form = new File(filePath);
+        filePath = form.getAbsolutePath(); // normalized
+        values.put(FormsColumns.FORM_FILE_PATH, filePath);
+
         Long now = Long.valueOf(System.currentTimeMillis());
 
         // Make sure that the necessary fields are all set
@@ -169,44 +270,58 @@ public class FormsProvider extends ContentProvider {
 
         if (values.containsKey(FormsColumns.DISPLAY_SUBTEXT) == false) {
             Date today = new Date();
-            String ts = new SimpleDateFormat("EEE, MMM dd, yyyy 'at' HH:mm").format(today);
-            values.put(FormsColumns.DISPLAY_SUBTEXT, "Added on " + ts);
+            String ts = new SimpleDateFormat(getContext().getString(R.string.added_on_date_at_time), Locale.getDefault()).format(today);
+            values.put(FormsColumns.DISPLAY_SUBTEXT, ts);
         }
 
-        // if we don't have a path to the file, the rest are irrelevant.
-        // it should fail anyway because you can't have a null file path.
-        if (values.containsKey(FormsColumns.FORM_FILE_PATH) == true) {
-            String filePath = values.getAsString(FormsColumns.FORM_FILE_PATH);
-            File form = new File(filePath);
+        if (values.containsKey(FormsColumns.DISPLAY_NAME) == false) {
+            values.put(FormsColumns.DISPLAY_NAME, form.getName());
+        }
 
-            if (values.containsKey(FormsColumns.DISPLAY_NAME) == false) {
-                values.put(FormsColumns.DISPLAY_NAME, form.getName());
-            }
+        // don't let users put in a manual md5 hash
+        if (values.containsKey(FormsColumns.MD5_HASH)) {
+            values.remove(FormsColumns.MD5_HASH);
+        }
+        String md5 = FileUtils.getMd5Hash(form);
+        values.put(FormsColumns.MD5_HASH, md5);
 
-            // don't let users put in a manual md5 hash
-            if (values.containsKey(FormsColumns.MD5_HASH)) {
-                values.remove(FormsColumns.MD5_HASH);
-            }
-            String md5 = FileUtils.getMd5Hash(form);
-            values.put(FormsColumns.MD5_HASH, md5);
-
-            if (values.containsKey(FormsColumns.JRCACHE_FILE_PATH) == false) {
-                String cachePath = "/sdcard/odk/.cache/" + md5 + ".formdef";
-                values.put(FormsColumns.JRCACHE_FILE_PATH, cachePath);
-            }
-            if (values.containsKey(FormsColumns.FORM_MEDIA_PATH) == false) {
-                String pathNoExtension = filePath.substring(0, filePath.lastIndexOf("."));
-                String mediaPath = pathNoExtension + "-media";
-                values.put(FormsColumns.FORM_MEDIA_PATH, mediaPath);
-            }
-
+        if (values.containsKey(FormsColumns.JRCACHE_FILE_PATH) == false) {
+            String cachePath = Collect.CACHE_PATH + File.separator + md5 + ".formdef";
+            values.put(FormsColumns.JRCACHE_FILE_PATH, cachePath);
+        }
+        if (values.containsKey(FormsColumns.FORM_MEDIA_PATH) == false) {
+            String pathNoExtension = filePath.substring(0, filePath.lastIndexOf("."));
+            String mediaPath = pathNoExtension + "-media";
+            values.put(FormsColumns.FORM_MEDIA_PATH, mediaPath);
         }
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // first try to see if a record with this filename already exists...
+        String[] projection = {
+                FormsColumns._ID, FormsColumns.FORM_FILE_PATH
+        };
+        String[] selectionArgs = { filePath };
+        String selection = FormsColumns.FORM_FILE_PATH + "=?";
+        Cursor c = null;
+        try {
+        	c = db.query(FORMS_TABLE_NAME, projection, selection, selectionArgs, null, null, null);
+        	if ( c.getCount() > 0 ) {
+        		// already exists
+        		throw new SQLException("FAILED Insert into " + uri + " -- row already exists for form definition file: " + filePath);
+        	}
+        } finally {
+        	if ( c != null ) {
+        		c.close();
+        	}
+        }
+
         long rowId = db.insert(FORMS_TABLE_NAME, null, values);
         if (rowId > 0) {
             Uri formUri = ContentUris.withAppendedId(FormsColumns.CONTENT_URI, rowId);
             getContext().getContentResolver().notifyChange(formUri, null);
+        	Collect.getInstance().getActivityLogger().logActionParam(this, "insert",
+        			formUri.toString(),  values.getAsString(FormsColumns.FORM_FILE_PATH));
             return formUri;
         }
 
@@ -218,6 +333,15 @@ public class FormsProvider extends ContentProvider {
         File file = new File(fileName);
         if (file.exists()) {
             if (file.isDirectory()) {
+            	// delete any media entries for files in this directory...
+                int images = MediaUtils.deleteImagesInFolderFromMediaProvider(file);
+                int audio = MediaUtils.deleteAudioInFolderFromMediaProvider(file);
+                int video = MediaUtils.deleteVideoInFolderFromMediaProvider(file);
+
+                Log.i(t, "removed from content providers: " + images
+                        + " image files, " + audio + " audio files,"
+                        + " and " + video + " video files.");
+
                 // delete all the containing files
                 File[] files = file.listFiles();
                 for (File f : files) {
@@ -244,30 +368,46 @@ public class FormsProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)) {
             case FORMS:
-                Cursor del = this.query(uri, null, where, whereArgs, null);
-                del.moveToPosition(-1);
-                while (del.moveToNext()) {
-                    deleteFileOrDir(del.getString(del
-                            .getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
-                    deleteFileOrDir(del.getString(del.getColumnIndex(FormsColumns.FORM_FILE_PATH)));
-                    deleteFileOrDir(del.getString(del.getColumnIndex(FormsColumns.FORM_MEDIA_PATH)));
+                Cursor del = null;
+                try {
+                	del = this.query(uri, null, where, whereArgs, null);
+	                del.moveToPosition(-1);
+	                while (del.moveToNext()) {
+	                    deleteFileOrDir(del.getString(del
+	                            .getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
+	                    String formFilePath = del.getString(del.getColumnIndex(FormsColumns.FORM_FILE_PATH));
+	                    Collect.getInstance().getActivityLogger().logAction(this, "delete", formFilePath);
+	                    deleteFileOrDir(formFilePath);
+	                    deleteFileOrDir(del.getString(del.getColumnIndex(FormsColumns.FORM_MEDIA_PATH)));
+	                }
+                } finally {
+                	if ( del != null ) {
+                		del.close();
+                	}
                 }
-                del.close();
                 count = db.delete(FORMS_TABLE_NAME, where, whereArgs);
                 break;
 
             case FORM_ID:
                 String formId = uri.getPathSegments().get(1);
 
-                Cursor c = this.query(uri, null, where, whereArgs, null);
-                // This should only ever return 1 record.
-                c.moveToPosition(-1);
-                while (c.moveToNext()) {
-                    deleteFileOrDir(c.getString(c.getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
-                    deleteFileOrDir(c.getString(c.getColumnIndex(FormsColumns.FORM_FILE_PATH)));
-                    deleteFileOrDir(c.getString(c.getColumnIndex(FormsColumns.FORM_MEDIA_PATH)));
+                Cursor c = null;
+                try {
+                	c = this.query(uri, null, where, whereArgs, null);
+	                // This should only ever return 1 record.
+	                c.moveToPosition(-1);
+	                while (c.moveToNext()) {
+	                    deleteFileOrDir(c.getString(c.getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
+	                    String formFilePath = c.getString(c.getColumnIndex(FormsColumns.FORM_FILE_PATH));
+	                    Collect.getInstance().getActivityLogger().logAction(this, "delete", formFilePath);
+	                    deleteFileOrDir(formFilePath);
+	                    deleteFileOrDir(c.getString(c.getColumnIndex(FormsColumns.FORM_MEDIA_PATH)));
+	                }
+                } finally {
+                	if ( c != null ) {
+                		c.close();
+                	}
                 }
-                c.close();
 
                 count =
                     db.delete(FORMS_TABLE_NAME,
@@ -302,28 +442,42 @@ public class FormsProvider extends ContentProvider {
                     values.put(FormsColumns.MD5_HASH, FileUtils.getMd5Hash(new File(formFile)));
                 }
 
-                Cursor c = this.query(uri, null, where, whereArgs, null);
+                Cursor c = null;
+                try {
+                	c = this.query(uri, null, where, whereArgs, null);
 
-                if (c.getCount() > 0) {
-                    c.moveToPosition(-1);
-                    while (c.moveToNext()) {
-                        // before updating the paths, delete all the files
-                        if (values.containsKey(FormsColumns.FORM_FILE_PATH)) {
-                            String newFile = values.getAsString(FormsColumns.FORM_FILE_PATH);
-                            String delFile =
-                                c.getString(c.getColumnIndex(FormsColumns.FORM_FILE_PATH));
-                            if (newFile.equalsIgnoreCase(delFile)) {
-                                // same file, so don't delete anything
-                            } else {
-                                // different files, delete the old one
-                                deleteFileOrDir(delFile);
-                            }
+	                if (c.getCount() > 0) {
+	                    c.moveToPosition(-1);
+	                    while (c.moveToNext()) {
+	                        // before updating the paths, delete all the files
+	                        if (values.containsKey(FormsColumns.FORM_FILE_PATH)) {
+	                            String newFile = values.getAsString(FormsColumns.FORM_FILE_PATH);
+	                            String delFile =
+	                                c.getString(c.getColumnIndex(FormsColumns.FORM_FILE_PATH));
+	                            if (newFile.equalsIgnoreCase(delFile)) {
+	                                // same file, so don't delete anything
+	                            } else {
+	                                // different files, delete the old one
+	                                deleteFileOrDir(delFile);
+	                            }
 
-                            // either way, delete the old cache because we'll calculate a new one.
-                            deleteFileOrDir(c.getString(c
-                                    .getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
-                        }
-                    }
+	                            // either way, delete the old cache because we'll calculate a new one.
+	                            deleteFileOrDir(c.getString(c
+	                                    .getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
+	                        }
+	                    }
+	                }
+                } finally {
+                	if ( c != null ) {
+                		c.close();
+                	}
+                }
+
+                // Make sure that the necessary fields are all set
+                if (values.containsKey(FormsColumns.DATE) == true) {
+                    Date today = new Date();
+                    String ts = new SimpleDateFormat(getContext().getString(R.string.added_on_date_at_time), Locale.getDefault()).format(today);
+                    values.put(FormsColumns.DISPLAY_SUBTEXT, ts);
                 }
 
                 count = db.update(FORMS_TABLE_NAME, values, where, whereArgs);
@@ -333,55 +487,69 @@ public class FormsProvider extends ContentProvider {
                 String formId = uri.getPathSegments().get(1);
                 // Whenever file paths are updated, delete the old files.
 
-                Cursor update = this.query(uri, null, where, whereArgs, null);
+                Cursor update = null;
+                try {
+                	update = this.query(uri, null, where, whereArgs, null);
 
-                // This should only ever return 1 record.
-                if (update.getCount() > 0) {
-                    update.moveToFirst();
+	                // This should only ever return 1 record.
+	                if (update.getCount() > 0) {
+	                    update.moveToFirst();
 
-                    // don't let users manually update md5
-                    if (values.containsKey(FormsColumns.MD5_HASH)) {
-                        values.remove(FormsColumns.MD5_HASH);
-                    }
+	                    // don't let users manually update md5
+	                    if (values.containsKey(FormsColumns.MD5_HASH)) {
+	                        values.remove(FormsColumns.MD5_HASH);
+	                    }
 
-                    // the order here is important (jrcache needs to be before form file)
-                    // because we update the jrcache file if there's a new form file
-                    if (values.containsKey(FormsColumns.JRCACHE_FILE_PATH)) {
-                        deleteFileOrDir(update.getString(update
-                                .getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
-                    }
+	                    // the order here is important (jrcache needs to be before form file)
+	                    // because we update the jrcache file if there's a new form file
+	                    if (values.containsKey(FormsColumns.JRCACHE_FILE_PATH)) {
+	                        deleteFileOrDir(update.getString(update
+	                                .getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
+	                    }
 
-                    if (values.containsKey(FormsColumns.FORM_FILE_PATH)) {
-                        String formFile = values.getAsString(FormsColumns.FORM_FILE_PATH);
-                        String oldFile =
-                            update.getString(update.getColumnIndex(FormsColumns.FORM_FILE_PATH));
+	                    if (values.containsKey(FormsColumns.FORM_FILE_PATH)) {
+	                        String formFile = values.getAsString(FormsColumns.FORM_FILE_PATH);
+	                        String oldFile =
+	                            update.getString(update.getColumnIndex(FormsColumns.FORM_FILE_PATH));
 
-                        if (formFile != null && formFile.equalsIgnoreCase(oldFile)) {
-                            // Files are the same, so we may have just copied over something we had
-                            // already
-                        } else {
-                            // New file name. This probably won't ever happen, though.
-                            deleteFileOrDir(oldFile);
-                        }
+	                        if (formFile != null && formFile.equalsIgnoreCase(oldFile)) {
+	                            // Files are the same, so we may have just copied over something we had
+	                            // already
+	                        } else {
+	                            // New file name. This probably won't ever happen, though.
+	                            deleteFileOrDir(oldFile);
+	                        }
 
-                        // we're updating our file, so update the md5
-                        // and get rid of the cache (doesn't harm anything)
-                        deleteFileOrDir(update.getString(update
-                                .getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
-                        String newMd5 = FileUtils.getMd5Hash(new File(formFile));
-                        values.put(FormsColumns.MD5_HASH, newMd5);
-                        values.put(FormsColumns.JRCACHE_FILE_PATH, "/sdcard/odk/.cache" + newMd5
-                                + ".formdef");
-                    }
+	                        // we're updating our file, so update the md5
+	                        // and get rid of the cache (doesn't harm anything)
+	                        deleteFileOrDir(update.getString(update
+	                                .getColumnIndex(FormsColumns.JRCACHE_FILE_PATH)));
+	                        String newMd5 = FileUtils.getMd5Hash(new File(formFile));
+	                        values.put(FormsColumns.MD5_HASH, newMd5);
+	                        values.put(FormsColumns.JRCACHE_FILE_PATH,
+	                        		Collect.CACHE_PATH + File.separator + newMd5 + ".formdef");
+	                    }
 
-                    count =
-                        db.update(FORMS_TABLE_NAME, values, FormsColumns._ID + "=" + formId
-                                + (!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""),
-                            whereArgs);
-                } else {
-                    Log.e(t, "Attempting to update row that does not exist");
+	                    // Make sure that the necessary fields are all set
+	                    if (values.containsKey(FormsColumns.DATE) == true) {
+	                        Date today = new Date();
+	                        String ts =
+	                            new SimpleDateFormat(getContext().getString(R.string.added_on_date_at_time), Locale.getDefault()).format(today);
+	                        values.put(FormsColumns.DISPLAY_SUBTEXT, ts);
+	                    }
+
+	                    count =
+	                        db.update(FORMS_TABLE_NAME, values, FormsColumns._ID + "=" + formId
+	                                + (!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""),
+	                            whereArgs);
+	                } else {
+	                    Log.e(t, "Attempting to update row that does not exist");
+	                }
+                } finally {
+                	if ( update != null ) {
+                		update.close();
+                	}
                 }
-                update.close();
                 break;
 
             default:
@@ -403,9 +571,9 @@ public class FormsProvider extends ContentProvider {
         sFormsProjectionMap.put(FormsColumns.DISPLAY_SUBTEXT, FormsColumns.DISPLAY_SUBTEXT);
         sFormsProjectionMap.put(FormsColumns.DESCRIPTION, FormsColumns.DESCRIPTION);
         sFormsProjectionMap.put(FormsColumns.JR_FORM_ID, FormsColumns.JR_FORM_ID);
-        sFormsProjectionMap.put(FormsColumns.MODEL_VERSION, FormsColumns.MODEL_VERSION);
-        sFormsProjectionMap.put(FormsColumns.UI_VERSION, FormsColumns.UI_VERSION);
+        sFormsProjectionMap.put(FormsColumns.JR_VERSION, FormsColumns.JR_VERSION);
         sFormsProjectionMap.put(FormsColumns.SUBMISSION_URI, FormsColumns.SUBMISSION_URI);
+        sFormsProjectionMap.put(FormsColumns.BASE64_RSA_PUBLIC_KEY, FormsColumns.BASE64_RSA_PUBLIC_KEY);
         sFormsProjectionMap.put(FormsColumns.MD5_HASH, FormsColumns.MD5_HASH);
         sFormsProjectionMap.put(FormsColumns.DATE, FormsColumns.DATE);
         sFormsProjectionMap.put(FormsColumns.FORM_MEDIA_PATH, FormsColumns.FORM_MEDIA_PATH);

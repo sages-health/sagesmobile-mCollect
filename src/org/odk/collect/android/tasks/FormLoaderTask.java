@@ -14,7 +14,16 @@
 
 package org.odk.collect.android.tasks;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
@@ -25,27 +34,19 @@ import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.model.xform.XFormsModule;
 import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.util.XFormUtils;
-import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.listeners.FormLoaderListener;
 import org.odk.collect.android.logic.FileReferenceFactory;
 import org.odk.collect.android.logic.FormController;
 import org.odk.collect.android.utilities.FileUtils;
 
+import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * Background task for loading a form.
@@ -59,37 +60,48 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
      * Classes needed to serialize objects. Need to put anything from JR in here.
      */
     public final static String[] SERIALIABLE_CLASSES = {
-            "org.javarosa.core.model.FormDef", "org.javarosa.core.model.GroupDef",
-            "org.javarosa.core.model.QuestionDef", "org.javarosa.core.model.data.DateData",
-            "org.javarosa.core.model.data.DateTimeData",
-            "org.javarosa.core.model.data.DecimalData",
-            "org.javarosa.core.model.data.GeoPointData",
-            "org.javarosa.core.model.data.helper.BasicDataPointer",
-            "org.javarosa.core.model.data.IntegerData",
-            "org.javarosa.core.model.data.MultiPointerAnswerData",
-            "org.javarosa.core.model.data.PointerAnswerData",
-            "org.javarosa.core.model.data.SelectMultiData",
-            "org.javarosa.core.model.data.SelectOneData",
-            "org.javarosa.core.model.data.StringData", "org.javarosa.core.model.data.TimeData",
-            "org.javarosa.core.services.locale.TableLocaleSource",
-            "org.javarosa.xpath.expr.XPathArithExpr", "org.javarosa.xpath.expr.XPathBoolExpr",
-            "org.javarosa.xpath.expr.XPathCmpExpr", "org.javarosa.xpath.expr.XPathEqExpr",
-            "org.javarosa.xpath.expr.XPathFilterExpr", "org.javarosa.xpath.expr.XPathFuncExpr",
-            "org.javarosa.xpath.expr.XPathNumericLiteral",
-            "org.javarosa.xpath.expr.XPathNumNegExpr", "org.javarosa.xpath.expr.XPathPathExpr",
-            "org.javarosa.xpath.expr.XPathStringLiteral", "org.javarosa.xpath.expr.XPathUnionExpr",
-            "org.javarosa.xpath.expr.XPathVariableReference"
+    		"org.javarosa.core.services.locale.ResourceFileDataSource", // JavaRosaCoreModule
+    		"org.javarosa.core.services.locale.TableLocaleSource", // JavaRosaCoreModule
+            "org.javarosa.core.model.FormDef",
+			"org.javarosa.core.model.SubmissionProfile", // CoreModelModule
+			"org.javarosa.core.model.QuestionDef", // CoreModelModule
+			"org.javarosa.core.model.GroupDef", // CoreModelModule
+			"org.javarosa.core.model.instance.FormInstance", // CoreModelModule
+			"org.javarosa.core.model.data.BooleanData", // CoreModelModule
+			"org.javarosa.core.model.data.DateData", // CoreModelModule
+			"org.javarosa.core.model.data.DateTimeData", // CoreModelModule
+			"org.javarosa.core.model.data.DecimalData", // CoreModelModule
+			"org.javarosa.core.model.data.GeoPointData", // CoreModelModule
+			"org.javarosa.core.model.data.IntegerData", // CoreModelModule
+			"org.javarosa.core.model.data.LongData", // CoreModelModule
+			"org.javarosa.core.model.data.MultiPointerAnswerData", // CoreModelModule
+			"org.javarosa.core.model.data.PointerAnswerData", // CoreModelModule
+			"org.javarosa.core.model.data.SelectMultiData", // CoreModelModule
+			"org.javarosa.core.model.data.SelectOneData", // CoreModelModule
+			"org.javarosa.core.model.data.StringData", // CoreModelModule
+			"org.javarosa.core.model.data.TimeData", // CoreModelModule
+			"org.javarosa.core.model.data.UncastData", // CoreModelModule
+			"org.javarosa.core.model.data.helper.BasicDataPointer" // CoreModelModule
     };
 
     private FormLoaderListener mStateListener;
     private String mErrorMsg;
+    private final String mInstancePath;
+    private final String mXPath;
+    private final String mWaitingXPath;
+    private boolean pendingActivityResult = false;
+    private int requestCode = 0;
+    private int resultCode = 0;
+    private Intent intent = null;
 
     protected class FECWrapper {
         FormController controller;
+        boolean usedSavepoint;
 
 
-        protected FECWrapper(FormController controller) {
+        protected FECWrapper(FormController controller, boolean usedSavepoint) {
             this.controller = controller;
+            this.usedSavepoint = usedSavepoint;
         }
 
 
@@ -97,6 +109,9 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
             return controller;
         }
 
+        protected boolean hasUsedSavepoint() {
+        	return usedSavepoint;
+        }
 
         protected void free() {
             controller = null;
@@ -105,6 +120,11 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
 
     FECWrapper data;
 
+    public FormLoaderTask(String instancePath, String XPath, String waitingXPath) {
+    	mInstancePath = instancePath;
+    	mXPath = XPath;
+    	mWaitingXPath = waitingXPath;
+    }
 
     /**
      * Initialize {@link FormEntryController} with {@link FormDef} from binary or from XML. If given
@@ -121,7 +141,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
 
         File formXml = new File(formPath);
         String formHash = FileUtils.getMd5Hash(formXml);
-        File formBin = new File(Collect.CACHE_PATH + "/" + formHash + ".formdef");
+        File formBin = new File(Collect.CACHE_PATH + File.separator + formHash + ".formdef");
 
         if (formBin.exists()) {
             // if we have binary, deserialize binary
@@ -166,19 +186,34 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         }
 
         // new evaluation context for function handlers
-        EvaluationContext ec = new EvaluationContext();
-        fd.setEvaluationContext(ec);
+        fd.setEvaluationContext(new EvaluationContext(null));
 
-        // create FormEntryController from formdef
+		// create FormEntryController from formdef
         FormEntryModel fem = new FormEntryModel(fd);
         fec = new FormEntryController(fem);
 
+        boolean usedSavepoint = false;
+        
         try {
             // import existing data into formdef
-            if (FormEntryActivity.mInstancePath != null) {
-                // This order is important. Import data, then initialize.
-                importData(FormEntryActivity.mInstancePath, fec);
-                fd.initialize(false);
+            if (mInstancePath != null) {
+            	File instance = new File(mInstancePath);
+            	File shadowInstance = SaveToDiskTask.savepointFile(instance);
+            	if ( shadowInstance.exists() &&
+            		 ( shadowInstance.lastModified() > instance.lastModified()) ) {
+            		// the savepoint is newer than the saved value of the instance.
+            		// use it.
+            		usedSavepoint = true;
+            		instance = shadowInstance;
+           			Log.w(t,"Loading instance from shadow file: " + shadowInstance.getAbsolutePath());
+            	}
+            	if ( instance.exists() ) {
+	                // This order is important. Import data, then initialize.
+	                importData(instance, fec);
+	                fd.initialize(false);
+            	} else {
+            		fd.initialize(true);
+            	}
             } else {
                 fd.initialize(true);
             }
@@ -189,7 +224,8 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
 
         // set paths to /sdcard/odk/forms/formfilename-media/
         String formFileName = formXml.getName().substring(0, formXml.getName().lastIndexOf("."));
-
+        File formMediaDir = new File( formXml.getParent(), formFileName + "-media");
+        
         // Remove previous forms
         ReferenceManager._().clearSession();
 
@@ -197,12 +233,14 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         if (ReferenceManager._().getFactories().length == 0) {
             // this is /sdcard/odk
             ReferenceManager._().addReferenceFactory(
-                new FileReferenceFactory(Environment.getExternalStorageDirectory() + "/odk"));
+                new FileReferenceFactory(Collect.ODK_ROOT));
         }
 
         // Set jr://... to point to /sdcard/odk/forms/filename-media/
         ReferenceManager._().addSessionRootTranslator(
             new RootTranslator("jr://images/", "jr://file/forms/" + formFileName + "-media/"));
+        ReferenceManager._().addSessionRootTranslator(
+                new RootTranslator("jr://image/", "jr://file/forms/" + formFileName + "-media/"));
         ReferenceManager._().addSessionRootTranslator(
             new RootTranslator("jr://audio/", "jr://file/forms/" + formFileName + "-media/"));
         ReferenceManager._().addSessionRootTranslator(
@@ -215,16 +253,25 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         formXml = null;
         formPath = null;
 
-        FormController fc = new FormController(fec);
-        data = new FECWrapper(fc);
+        FormController fc = new FormController(formMediaDir, fec, mInstancePath == null ? null : new File(mInstancePath));
+        if ( mXPath != null ) {
+        	// we are resuming after having terminated -- set index to this position...
+        	FormIndex idx = fc.getIndexFromXPath(mXPath);
+    		fc.jumpToIndex(idx);
+        }
+        if ( mWaitingXPath != null ) {
+        	FormIndex idx = fc.getIndexFromXPath(mWaitingXPath);
+        	fc.setIndexWaitingForData(idx);
+        }
+        data = new FECWrapper(fc, usedSavepoint);
         return data;
 
     }
 
 
-    public boolean importData(String filePath, FormEntryController fec) {
+    public boolean importData(File instanceFile, FormEntryController fec) {
         // convert files into a byte array
-        byte[] fileBytes = FileUtils.getFileAsBytes(new File(filePath));
+        byte[] fileBytes = FileUtils.getFileAsBytes(instanceFile);
 
         // get the root of the saved and template instances
         TreeElement savedRoot = XFormParser.restoreDataModel(fileBytes, null).getRoot();
@@ -269,7 +316,14 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         // TODO: any way to remove reliance on jrsp?
 
         // need a list of classes that formdef uses
-        PrototypeManager.registerPrototypes(SERIALIABLE_CLASSES);
+    	// unfortunately, the JR registerModule() functions do more than this.
+    	// register just the classes that would have been registered by:
+    	// new JavaRosaCoreModule().registerModule();
+    	// new CoreModelModule().registerModule();
+    	// replace with direct call to PrototypeManager
+    	PrototypeManager.registerPrototypes(SERIALIABLE_CLASSES);
+        new XFormsModule().registerModule();
+        
         FileInputStream fis = null;
         FormDef fd = null;
         try {
@@ -291,6 +345,9 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         } catch (DeserializationException e) {
             e.printStackTrace();
             fd = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            fd = null;
         }
 
         return fd;
@@ -305,7 +362,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
     public void serializeFormDef(FormDef fd, String filepath) {
         // calculate unique md5 identifier
         String hash = FileUtils.getMd5Hash(new File(filepath));
-        File formDef = new File(Collect.CACHE_PATH + "/" + hash + ".formdef");
+        File formDef = new File(Collect.CACHE_PATH + File.separator + hash + ".formdef");
 
         // formdef does not exist, create one.
         if (!formDef.exists()) {
@@ -332,7 +389,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
                 if (wrapper == null) {
                     mStateListener.loadingError(mErrorMsg);
                 } else {
-                    mStateListener.loadingComplete(wrapper.getController());
+                    mStateListener.loadingComplete(this);
                 }
             }
         }
@@ -345,6 +402,13 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         }
     }
 
+    public FormController getFormController() {
+    	return ( data != null ) ? data.getController() : null;
+    }
+    
+    public boolean hasUsedSavepoint() {
+    	return (data != null ) ? data.hasUsedSavepoint() : false;
+    }
 
     public void destroy() {
         if (data != null) {
@@ -352,5 +416,28 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
             data = null;
         }
     }
+    
+    public boolean hasPendingActivityResult() {
+    	return pendingActivityResult;
+    }
+    
+    public int getRequestCode() {
+    	return requestCode;
+    }
+    
+    public int getResultCode() {
+    	return resultCode;
+    }
+    
+    public Intent getIntent() {
+    	return intent;
+    }
+
+	public void setActivityResult(int requestCode, int resultCode, Intent intent) {
+		this.pendingActivityResult = true;
+		this.requestCode = requestCode;
+		this.resultCode = resultCode;
+		this.intent = intent;
+	}
 
 }

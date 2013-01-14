@@ -14,24 +14,18 @@ License for the specific language governing permissions and limitations under
 the License.
 -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="@android:drawable/toast_frame">
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/message"
                 android:layout_gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="21dp" 
+                android:textSize="21sp"
                 android:textColor="@drawable/white"
                 />
 
-    </LinearLayout>
-</FrameLayout>
+</LinearLayout>

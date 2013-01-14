@@ -1,5 +1,21 @@
+/*
+ * Copyright (C) 2011 University of Washington
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.odk.collect.android.widgets;
+
+import java.io.File;
+import java.util.Vector;
 
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
@@ -20,11 +36,10 @@ import android.view.Gravity;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import java.io.File;
-import java.util.Vector;
 
 /**
  * The Label Widget does not return an answer. The purpose of this widget is to be the top entry in
@@ -35,8 +50,6 @@ import java.util.Vector;
  * @author Jeff Beorse
  */
 public class LabelWidget extends QuestionWidget {
-    private static final int RANDOM_BUTTON_ID = 4853487;
-    protected final static int TEXTSIZE = 21;
     private static final String t = "LabelWidget";
 
     LinearLayout buttonLayout;
@@ -57,7 +70,7 @@ public class LabelWidget extends QuestionWidget {
 
         buttonLayout = new LinearLayout(context);
 
-        if (prompt.getSelectChoices() != null) {
+        if (mItems != null) {
             for (int i = 0; i < mItems.size(); i++) {
 
                 String imageURI = null;
@@ -68,6 +81,8 @@ public class LabelWidget extends QuestionWidget {
                 // build image view (if an image is provided)
                 mImageView = null;
                 mMissingImage = null;
+
+                final int labelId = QuestionWidget.newUniqueId();
 
                 // Now set up the image view
                 String errorMsg = null;
@@ -96,7 +111,7 @@ public class LabelWidget extends QuestionWidget {
                                 mImageView.setPadding(2, 2, 2, 2);
                                 mImageView.setAdjustViewBounds(true);
                                 mImageView.setImageBitmap(b);
-                                mImageView.setId(23423534);
+                                mImageView.setId(labelId);
                             } else if (errorMsg == null) {
                                 // An error hasn't been logged and loading the image failed, so it's
                                 // likely
@@ -118,7 +133,7 @@ public class LabelWidget extends QuestionWidget {
                             mMissingImage.setText(errorMsg);
 
                             mMissingImage.setPadding(2, 2, 2, 2);
-                            mMissingImage.setId(234873453);
+                            mMissingImage.setId(labelId);
                         }
                     } catch (InvalidReferenceException e) {
                         Log.e(t, "image invalid reference exception");
@@ -132,23 +147,24 @@ public class LabelWidget extends QuestionWidget {
                 // button because it aligns horizontally, and we want the label on top
                 label = new TextView(getContext());
                 label.setText(prompt.getSelectChoiceText(mItems.get(i)));
-                label.setTextSize(TypedValue.COMPLEX_UNIT_DIP, TEXTSIZE);
+                label.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
+                label.setGravity(Gravity.CENTER_HORIZONTAL);
 
                 // answer layout holds the label text/image on top and the radio button on bottom
-                LinearLayout answer = new LinearLayout(getContext());
-                answer.setOrientation(LinearLayout.VERTICAL);
-                LinearLayout.LayoutParams params =
-                    new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-                            LayoutParams.WRAP_CONTENT);
-                params.gravity = Gravity.TOP;
-                answer.setLayoutParams(params);
-
+                RelativeLayout answer = new RelativeLayout(getContext());
+                RelativeLayout.LayoutParams headerParams =
+                        new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                headerParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                headerParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                
                 if (mImageView != null) {
-                    answer.addView(mImageView);
+                	mImageView.setScaleType(ScaleType.CENTER);
+                    answer.addView(mImageView, headerParams);
                 } else if (mMissingImage != null) {
-                    answer.addView(mMissingImage);
+                    answer.addView(mMissingImage, headerParams);
                 } else {
-                    answer.addView(label);
+                	label.setId(labelId);
+                    answer.addView(label, headerParams);
                 }
                 answer.setPadding(4, 0, 4, 0);
 
@@ -209,10 +225,10 @@ public class LabelWidget extends QuestionWidget {
         // Add the text view. Textview always exists, regardless of whether there's text.
         mQuestionText = new TextView(getContext());
         mQuestionText.setText(p.getLongText());
-        mQuestionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, TEXTSIZE);
+        mQuestionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
         mQuestionText.setTypeface(null, Typeface.BOLD);
         mQuestionText.setPadding(0, 0, 0, 7);
-        mQuestionText.setId(RANDOM_BUTTON_ID); // assign random id
+        mQuestionText.setId(QuestionWidget.newUniqueId()); // assign random id
 
         // Wrap to the size of the parent view
         mQuestionText.setHorizontallyScrolling(false);

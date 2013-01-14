@@ -14,6 +14,8 @@
 
 package org.odk.collect.android.widgets;
 
+import java.text.NumberFormat;
+
 import org.javarosa.core.model.data.DecimalData;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
@@ -24,8 +26,6 @@ import android.text.InputType;
 import android.text.method.DigitsKeyListener;
 import android.util.TypedValue;
 
-import java.text.NumberFormat;
-
 /**
  * A widget that restricts values to floating point numbers.
  * 
@@ -33,8 +33,24 @@ import java.text.NumberFormat;
  */
 public class DecimalWidget extends StringWidget {
 
+	private Double getDoubleAnswerValue() {
+		IAnswerData dataHolder = mPrompt.getAnswerValue();
+        Double d = null;
+        if (dataHolder != null) {
+        	Object dataValue = dataHolder.getValue();
+        	if ( dataValue != null ) {
+        		if (dataValue instanceof Integer){
+	                d =  Double.valueOf(((Integer)dataValue).intValue());
+	            } else {
+	                d =  (Double) dataValue;
+	            }
+        	}
+        }
+        return d;
+	}
+	
     public DecimalWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+        super(context, prompt, true);
 
         // formatting
         mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
@@ -52,17 +68,17 @@ public class DecimalWidget extends StringWidget {
         fa[0] = new InputFilter.LengthFilter(15);
         mAnswer.setFilters(fa);
 
-        // in case xforms calcuate returns a double, convert to integer
-        Double d = null;
-        if (prompt.getAnswerValue() != null)
-            d = (Double) prompt.getAnswerValue().getValue();
+        Double d = getDoubleAnswerValue();
 
         NumberFormat nf = NumberFormat.getNumberInstance();
         nf.setMaximumFractionDigits(15);
         nf.setMaximumIntegerDigits(15);
         nf.setGroupingUsed(false);
         if (d != null) {
-            mAnswer.setText(nf.format(d));
+        	// truncate to 15 digits max...
+            String dString = nf.format(d);
+            d = Double.parseDouble(dString.replace(',', '.'));
+            mAnswer.setText(d.toString());
         }
 
         // disable if read only
@@ -71,11 +87,14 @@ public class DecimalWidget extends StringWidget {
             setFocusable(false);
             setClickable(false);
         }
+        
+        setupChangeListener();
     }
 
 
     @Override
     public IAnswerData getAnswer() {
+    	clearFocus();
         String s = mAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;

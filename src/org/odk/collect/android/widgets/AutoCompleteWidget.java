@@ -1,8 +1,18 @@
+/*
+ * Copyright (C) 2011 University of Washington
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.odk.collect.android.widgets;
-
-import java.util.ArrayList;
-import java.util.Vector;
 
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
@@ -10,7 +20,6 @@ import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.form.api.FormEntryPrompt;
 
-import android.R;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.Gravity;
@@ -21,13 +30,17 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Vector;
+
 /**
  * AutoCompleteWidget handles select-one fields using an autocomplete text box. The user types part
  * of the desired selection and suggestions appear in a list below. The full list of possible
  * answers is not displayed to the user. The goal is to be more compact; this question type is best
  * suited for select one questions with a large number of possible answers. If images, audio, or
  * video are specified in the select answers they are ignored.
- * 
+ *
  * @author Jeff Beorse (jeff@beorse.net)
  */
 public class AutoCompleteWidget extends QuestionWidget {
@@ -80,7 +93,7 @@ public class AutoCompleteWidget extends QuestionWidget {
             String sMatch = mItems.get(i).getValue();
 
             if (sMatch.equals(s)) {
-                autocomplete.setText(sMatch);
+                autocomplete.setText(mItems.get(i).getLabelInnerText());
             }
         }
 
@@ -91,7 +104,8 @@ public class AutoCompleteWidget extends QuestionWidget {
 
     @Override
     public IAnswerData getAnswer() {
-        String response = autocomplete.getText().toString();
+    	clearFocus();
+    	String response = autocomplete.getText().toString();
         for (SelectChoice sc : mItems) {
             if (response.equals(mPrompt.getSelectChoiceText(sc))) {
                 return new SelectOneData(new Selection(sc));
@@ -204,7 +218,7 @@ public class AutoCompleteWidget extends QuestionWidget {
                     results.count = mItemsArray.size();
                 } else {
                     // Compare lower case strings
-                    String prefixString = prefix.toString().toLowerCase();
+                    String prefixString = prefix.toString().toLowerCase(Locale.getDefault());
 
                     // Local to here so we're not changing actual array
                     final ArrayList<String> items = mItems;
@@ -213,7 +227,7 @@ public class AutoCompleteWidget extends QuestionWidget {
 
                     for (int i = 0; i < count; i++) {
                         final String item = items.get(i);
-                        String item_compare = item.toLowerCase();
+                        String item_compare = item.toLowerCase(Locale.getDefault());
 
                         // Match the strings using the filter specified
                         if (filterType.equals(match_substring)

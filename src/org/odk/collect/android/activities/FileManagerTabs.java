@@ -15,6 +15,7 @@
 package org.odk.collect.android.activities;
 
 import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
 
 import android.app.TabActivity;
 import android.content.Intent;
@@ -32,12 +33,11 @@ import android.widget.TextView;
  */
 public class FileManagerTabs extends TabActivity {
 
-    private static TextView mTVFF;
-    private static TextView mTVDF;
+    private TextView mTVFF;
+    private TextView mTVDF;
 
     private static final String FORMS_TAB = "forms_tab";
     private static final String DATA_TAB = "data_tab";
-    private static final int FONT_SIZE = 21;
 
 
     @Override
@@ -50,42 +50,41 @@ public class FileManagerTabs extends TabActivity {
         tabHost.setBackgroundColor(Color.WHITE);
         tabHost.getTabWidget().setBackgroundColor(Color.BLACK);
 
-        Intent local = new Intent(this, FormManagerList.class);
-        tabHost.addTab(tabHost.newTabSpec(FORMS_TAB).setIndicator(getString(R.string.forms))
-                .setContent(local));
-
         Intent remote = new Intent(this, DataManagerList.class);
         tabHost.addTab(tabHost.newTabSpec(DATA_TAB).setIndicator(getString(R.string.data))
                 .setContent(remote));
+        
+        Intent local = new Intent(this, FormManagerList.class);
+        tabHost.addTab(tabHost.newTabSpec(FORMS_TAB).setIndicator(getString(R.string.forms))
+                .setContent(local));
 
         // hack to set font size
         LinearLayout ll = (LinearLayout) tabHost.getChildAt(0);
         TabWidget tw = (TabWidget) ll.getChildAt(0);
 
+        int fontsize = Collect.getQuestionFontsize();
+        
         RelativeLayout rllf = (RelativeLayout) tw.getChildAt(0);
         mTVFF = (TextView) rllf.getChildAt(1);
-        mTVFF.setTextSize(FONT_SIZE);
+        mTVFF.setTextSize(fontsize);
         mTVFF.setPadding(0, 0, 0, 6);
 
         RelativeLayout rlrf = (RelativeLayout) tw.getChildAt(1);
         mTVDF = (TextView) rlrf.getChildAt(1);
-        mTVDF.setTextSize(FONT_SIZE);
+        mTVDF.setTextSize(fontsize);
         mTVDF.setPadding(0, 0, 0, 6);
     }
 
-
-    /**
-     * Sets the tab header to the specified name
-     * 
-     * @param name
-     * @param tab
-     */
-    public static void setTabHeader(String name, String tab) {
-        if (tab.equals(FORMS_TAB)) {
-            mTVFF.setText(name);
-        } else if (tab.equals(DATA_TAB)) {
-            mTVDF.setText(name);
-        }
+    @Override
+    protected void onStart() {
+    	super.onStart();
+		Collect.getInstance().getActivityLogger().logOnStart(this); 
+    }
+    
+    @Override
+    protected void onStop() {
+		Collect.getInstance().getActivityLogger().logOnStop(this); 
+    	super.onStop();
     }
 
 }

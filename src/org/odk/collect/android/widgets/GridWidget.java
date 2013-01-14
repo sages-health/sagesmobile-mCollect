@@ -1,5 +1,21 @@
+/*
+ * Copyright (C) 2011 University of Washington
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.odk.collect.android.widgets;
+
+import java.io.File;
+import java.util.Vector;
 
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
@@ -10,8 +26,10 @@ import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.listeners.AdvanceToNextListener;
 import org.odk.collect.android.utilities.FileUtils;
+import org.odk.collect.android.views.AudioButton.AudioHandler;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -29,9 +47,6 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.io.File;
-import java.util.Vector;
 
 /**
  * GridWidget handles select-one fields using a grid of icons. The user clicks the desired icon and
@@ -54,6 +69,7 @@ public class GridWidget extends QuestionWidget {
 
     // The image views for each of the icons
     ImageView[] imageViews;
+    AudioHandler[] audioHandlers;
 
     // The number of columns in the grid, can be user defined
     int numColumns;
@@ -85,6 +101,7 @@ public class GridWidget extends QuestionWidget {
         choices = new String[mItems.size()];
         gridview = new GridView(context);
         imageViews = new ImageView[mItems.size()];
+        audioHandlers = new AudioHandler[mItems.size()];
         maxColumnWidth = -1;
         this.numColumns = numColumns;
         for (int i = 0; i < mItems.size(); i++) {
@@ -95,6 +112,15 @@ public class GridWidget extends QuestionWidget {
         // Build view
         for (int i = 0; i < mItems.size(); i++) {
             SelectChoice sc = mItems.get(i);
+            
+            // Create an audioHandler iff there is an audio prompt associated with this selection.
+            String audioURI = 
+            		prompt.getSpecialFormSelectChoiceText(sc, FormEntryCaption.TEXT_FORM_AUDIO);
+            if ( audioURI != null) {
+            	audioHandlers[i] = new AudioHandler(prompt.getIndex(), sc.getValue(), audioURI);
+            } else {
+            	audioHandlers[i] = null;
+            }
             // Read the image sizes and set maxColumnWidth. This allows us to make sure all of our
             // columns are going to fit
             String imageURI =
@@ -145,16 +171,24 @@ public class GridWidget extends QuestionWidget {
                 // and then check the one clicked by the user. Update the
                 // background color accordingly
                 for (int i = 0; i < selected.length; i++) {
+                	// if we have an audio handler, be sure audio is stopped.
+                	if ( selected[i] && (audioHandlers[i] != null)) {
+                		audioHandlers[i].stopPlaying(); 
+                	}
                     selected[i] = false;
                     if (imageViews[i] != null) {
                         imageViews[i].setBackgroundColor(Color.WHITE);
                     }
                 }
                 selected[position] = true;
+               	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.select", 
+            			mItems.get(position).getValue(), mPrompt.getIndex());
                 imageViews[position].setBackgroundColor(Color.rgb(orangeRedVal, orangeGreenVal,
                     orangeBlueVal));
                 if (quickAdvance) {
-                    listener.next();
+                    listener.advance();
+                } else if ( audioHandlers[position] != null ) {
+                	audioHandlers[position].playAudio(getContext());
                 }
             }
         });

@@ -18,17 +18,12 @@ the License.
 	android:orientation="vertical"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
-	<LinearLayout
-		xmlns:android="http://schemas.android.com/apk/res/android"
-		android:orientation="vertical"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent">
 		<TextView
 			android:id="@+id/status_text"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:text="@string/form_scan_starting"
-			android:textSize="14dp"
+			android:textSize="14sp"
 			android:paddingLeft="8dip"
 			android:paddingRight="8dip"
 			android:paddingBottom="4dip"
@@ -42,13 +37,11 @@ the License.
 			android:id="@android:id/empty"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"
-			android:text="@string/no_items_display"
-			android:textSize="19dp"
+			android:text="@string/no_items_display_forms"
+			android:textSize="21sp"
 			android:paddingLeft="20dp"
 			android:paddingRight="20dp"
 			android:gravity="center"
 			android:background="@drawable/white"
 			android:textColor="@drawable/black" />
-	</LinearLayout>
 </LinearLayout>
- 

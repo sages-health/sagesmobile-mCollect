@@ -18,6 +18,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
 
 import android.content.Context;
 import android.util.TypedValue;
@@ -37,7 +38,7 @@ public class TriggerWidget extends QuestionWidget {
 
     private CheckBox mTriggerButton;
     private TextView mStringAnswer;
-    private static String mOK = "OK";
+    private static final String mOK = "OK";
 
     private FormEntryPrompt mPrompt;
 
@@ -54,6 +55,7 @@ public class TriggerWidget extends QuestionWidget {
         this.setOrientation(LinearLayout.VERTICAL);
 
         mTriggerButton = new CheckBox(getContext());
+        mTriggerButton.setId(QuestionWidget.newUniqueId());
         mTriggerButton.setText(getContext().getString(R.string.trigger));
         mTriggerButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
         // mActionButton.setPadding(20, 20, 20, 20);
@@ -64,13 +66,18 @@ public class TriggerWidget extends QuestionWidget {
             public void onClick(View v) {
                 if (mTriggerButton.isChecked()) {
                     mStringAnswer.setText(mOK);
+                	Collect.getInstance().getActivityLogger().logInstanceAction(TriggerWidget.this, "triggerButton", 
+                			"OK", mPrompt.getIndex());
                 } else {
                     mStringAnswer.setText(null);
+                	Collect.getInstance().getActivityLogger().logInstanceAction(TriggerWidget.this, "triggerButton", 
+                			"null", mPrompt.getIndex());
                 }
             }
         });
 
         mStringAnswer = new TextView(getContext());
+        mStringAnswer.setId(QuestionWidget.newUniqueId());
         mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
         mStringAnswer.setGravity(Gravity.CENTER);
 

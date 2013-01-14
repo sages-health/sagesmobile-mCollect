@@ -14,19 +14,21 @@
 
 package org.odk.collect.android.widgets;
 
-import java.util.Calendar;
-import java.util.Date;
-
 import org.javarosa.core.model.data.DateData;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import org.odk.collect.android.application.Collect;
 
 import android.content.Context;
 import android.view.Gravity;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
+
+import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Displays a DatePicker widget. DateWidget handles leap years and does not allow dates that do not
@@ -39,15 +41,23 @@ public class DateWidget extends QuestionWidget {
 
     private DatePicker mDatePicker;
     private DatePicker.OnDateChangedListener mDateListener;
+    private boolean hideDay = false;
+    private boolean hideMonth = false;
 
 
     public DateWidget(Context context, FormEntryPrompt prompt) {
         super(context, prompt);
 
         mDatePicker = new DatePicker(getContext());
+        mDatePicker.setId(QuestionWidget.newUniqueId());
         mDatePicker.setFocusable(!prompt.isReadOnly());
         mDatePicker.setEnabled(!prompt.isReadOnly());
+        
+        hideDayFieldIfNotInFormat(prompt);
 
+        // If there's an answer, use it.
+        setAnswer();
+        
         mDateListener = new DatePicker.OnDateChangedListener() {
             @Override
             public void onDateChanged(DatePicker view, int year, int month, int day) {
@@ -60,22 +70,69 @@ public class DateWidget extends QuestionWidget {
                     Calendar c = Calendar.getInstance();
                     c.set(year, month, 1);
                     int max = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+                    // in older versions of android (1.6ish) the datepicker lets you pick bad dates
+                    // in newer versions, calling updateDate() calls onDatechangedListener(), causing an
+                    // endless loop.
                     if (day > max) {
-                        mDatePicker.updateDate(year, month, max);
+                        if (! (mDatePicker.getDayOfMonth()==day && mDatePicker.getMonth()==month && mDatePicker.getYear()==year) ) {
+                        	Collect.getInstance().getActivityLogger().logInstanceAction(DateWidget.this, "onDateChanged", 
+                        			String.format("%1$04d-%2$02d-%3$02d",year, month, max), mPrompt.getIndex());
+                            mDatePicker.updateDate(year, month, max);
+                        }
                     } else {
-                        mDatePicker.updateDate(year, month, day);
+                        if (! (mDatePicker.getDayOfMonth()==day && mDatePicker.getMonth()==month && mDatePicker.getYear()==year) ) {
+                        	Collect.getInstance().getActivityLogger().logInstanceAction(DateWidget.this, "onDateChanged", 
+                        			String.format("%1$04d-%2$02d-%3$02d",year, month, day), mPrompt.getIndex());
+                            mDatePicker.updateDate(year, month, day);
+                        }
                     }
                 }
             }
         };
 
-        // If there's an answer, use it.
-        setAnswer();
-
         setGravity(Gravity.LEFT);
         addView(mDatePicker);
     }
 
+    private void hideDayFieldIfNotInFormat(FormEntryPrompt prompt) {
+        String appearance = prompt.getQuestion().getAppearanceAttr();
+        if ( appearance == null ) return;
+        
+        if ( "month-year".equals(appearance) ) {
+        	hideDay = true;
+        } else if ( "year".equals(appearance) ) {
+        	hideMonth = true;
+        }
+
+        if ( hideMonth || hideDay ) {
+		    for (Field datePickerDialogField : this.mDatePicker.getClass().getDeclaredFields()) {
+		        if ("mDayPicker".equals(datePickerDialogField.getName()) ||
+		                "mDaySpinner".equals(datePickerDialogField.getName())) {
+		            datePickerDialogField.setAccessible(true);
+		            Object dayPicker = new Object();
+		            try {
+		                dayPicker = datePickerDialogField.get(this.mDatePicker);
+		            } catch (Exception e) {
+		                e.printStackTrace();
+		            }
+		            ((View) dayPicker).setVisibility(View.GONE);
+		        }
+		        if ( hideMonth ) {
+			        if ("mMonthPicker".equals(datePickerDialogField.getName()) ||
+			                "mMonthSpinner".equals(datePickerDialogField.getName())) {
+			            datePickerDialogField.setAccessible(true);
+			            Object monthPicker = new Object();
+			            try {
+			            	monthPicker = datePickerDialogField.get(this.mDatePicker);
+			            } catch (Exception e) {
+			                e.printStackTrace();
+			            }
+			            ((View) monthPicker).setVisibility(View.GONE);
+			        }
+		        }
+		    }
+        }
+    }
 
     private void setAnswer() {
 
@@ -104,10 +161,11 @@ public class DateWidget extends QuestionWidget {
 
     @Override
     public IAnswerData getAnswer() {
+    	clearFocus();
         DateTime ldt =
-            new DateTime(mDatePicker.getYear(), mDatePicker.getMonth() + 1,
-                    mDatePicker.getDayOfMonth(), 0, 0);
-       // DateTime utc = ldt.withZone(DateTimeZone.forID("UTC"));
+            new DateTime(mDatePicker.getYear(), hideMonth ? 1 : mDatePicker.getMonth() + 1,
+                    (hideMonth || hideDay) ? 1 : mDatePicker.getDayOfMonth(), 0, 0);
+        // DateTime utc = ldt.withZone(DateTimeZone.forID("UTC"));
         return new DateData(ldt.toDate());
     }
 

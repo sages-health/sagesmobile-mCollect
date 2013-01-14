@@ -1,7 +1,21 @@
+/*
+ * Copyright (C) 2011 University of Washington
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.odk.collect.android.activities;
 
 import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.widgets.GeoPointWidget;
 
 import android.content.Context;
@@ -51,8 +65,8 @@ public class GeoPointMapActivity extends MapActivity implements LocationListener
     private boolean mGPSOn = false;
     private boolean mNetworkOn = false;
     
-    private static double LOCATION_ACCURACY = 5;
-
+    private double mLocationAccuracy;
+    
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,10 +76,17 @@ public class GeoPointMapActivity extends MapActivity implements LocationListener
         setContentView(R.layout.geopoint_layout);
 
         Intent intent = getIntent();
+        
+        mLocationAccuracy = GeoPointWidget.DEFAULT_LOCATION_ACCURACY;
         if (intent != null && intent.getExtras() != null) {
-            double[] location = intent.getDoubleArrayExtra(GeoPointWidget.LOCATION);
-            mGeoPoint = new GeoPoint((int) (location[0] * 1E6), (int) (location[1] * 1E6));
-            mCaptureLocation = false;
+        	if ( intent.hasExtra(GeoPointWidget.LOCATION) ) {
+        		double[] location = intent.getDoubleArrayExtra(GeoPointWidget.LOCATION);
+            	mGeoPoint = new GeoPoint((int) (location[0] * 1E6), (int) (location[1] * 1E6));
+            	mCaptureLocation = false;
+            }
+        	if ( intent.hasExtra(GeoPointWidget.ACCURACY_THRESHOLD) ) {
+        		mLocationAccuracy = intent.getDoubleExtra(GeoPointWidget.ACCURACY_THRESHOLD, GeoPointWidget.DEFAULT_LOCATION_ACCURACY);
+        	}
         }
 
         mMapView = (MapView) findViewById(R.id.mapview);
@@ -74,6 +95,7 @@ public class GeoPointMapActivity extends MapActivity implements LocationListener
 
             @Override
             public void onClick(View v) {
+                Collect.getInstance().getActivityLogger().logInstanceAction(this, "cancelLocation", "cancel");
                 finish();
             }
         });
@@ -111,6 +133,7 @@ public class GeoPointMapActivity extends MapActivity implements LocationListener
 
                 @Override
                 public void onClick(View v) {
+                    Collect.getInstance().getActivityLogger().logInstanceAction(this, "acceptLocation", "OK");
                     returnLocation();
                 }
             });
@@ -128,11 +151,24 @@ public class GeoPointMapActivity extends MapActivity implements LocationListener
 
                 @Override
                 public void onClick(View v) {
+                    Collect.getInstance().getActivityLogger().logInstanceAction(this, "showLocation", "onClick");
                     mMapController.animateTo(mGeoPoint);
                 }
             });
 
         }
+    }
+	
+    @Override
+    protected void onStart() {
+    	super.onStart();
+		Collect.getInstance().getActivityLogger().logOnStart(this); 
+    }
+    
+    @Override
+    protected void onStop() {
+		Collect.getInstance().getActivityLogger().logOnStop(this); 
+    	super.onStop();
     }
 
 
@@ -197,7 +233,7 @@ public class GeoPointMapActivity extends MapActivity implements LocationListener
 
                 mMapController.animateTo(mGeoPoint);
 
-                if (mLocation.getAccuracy() <= LOCATION_ACCURACY) {
+                if (mLocation.getAccuracy() <= mLocationAccuracy) {
                     returnLocation();
                 }
             }

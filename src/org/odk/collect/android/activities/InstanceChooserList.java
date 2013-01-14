@@ -16,6 +16,7 @@ package org.odk.collect.android.activities;
 
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.provider.InstanceProviderAPI;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
 
 import android.app.AlertDialog;
@@ -39,7 +40,8 @@ import android.widget.TextView;
  */
 public class InstanceChooserList extends ListActivity {
 
-    private static boolean EXIT = true;
+    private static final boolean EXIT = true;
+    private static final boolean DO_NOT_EXIT = false;
     private AlertDialog mAlertDialog;
     
     @Override
@@ -59,7 +61,10 @@ public class InstanceChooserList extends ListActivity {
         TextView tv = (TextView) findViewById(R.id.status_text);
         tv.setVisibility(View.GONE);
         
-        Cursor c = managedQuery(InstanceColumns.CONTENT_URI, null, null, null, null);
+        String selection = InstanceColumns.STATUS + " != ?";
+        String[] selectionArgs = {InstanceProviderAPI.STATUS_SUBMITTED};
+        String sortOrder = InstanceColumns.STATUS + " DESC, " + InstanceColumns.DISPLAY_NAME + " ASC";
+        Cursor c = managedQuery(InstanceColumns.CONTENT_URI, null, selection, selectionArgs, sortOrder);
 
         String[] data = new String[] {
                 InstanceColumns.DISPLAY_NAME, InstanceColumns.DISPLAY_SUBTEXT
@@ -92,18 +97,48 @@ public class InstanceChooserList extends ListActivity {
             ContentUris.withAppendedId(InstanceColumns.CONTENT_URI,
                 c.getLong(c.getColumnIndex(InstanceColumns._ID)));
 
+        Collect.getInstance().getActivityLogger().logAction(this, "onListItemClick", instanceUri.toString());
+
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action)) {
             // caller is waiting on a picked form
             setResult(RESULT_OK, new Intent().setData(instanceUri));
         } else {
+            // the form can be edited if it is incomplete or if, when it was
+            // marked as complete, it was determined that it could be edited
+            // later.
+            String status = c.getString(c.getColumnIndex(InstanceColumns.STATUS));
+            String strCanEditWhenComplete = 
+                c.getString(c.getColumnIndex(InstanceColumns.CAN_EDIT_WHEN_COMPLETE));
+
+            boolean canEdit = status.equals(InstanceProviderAPI.STATUS_INCOMPLETE)
+                	           || Boolean.parseBoolean(strCanEditWhenComplete);
+            if (!canEdit) {
+            	createErrorDialog(getString(R.string.cannot_edit_completed_form),
+                    	          DO_NOT_EXIT);
+            	return;
+            }
             // caller wants to view/edit a form, so launch formentryactivity
             startActivity(new Intent(Intent.ACTION_EDIT, instanceUri));
         }
         finish();
     }
+	
+    @Override
+    protected void onStart() {
+    	super.onStart();
+		Collect.getInstance().getActivityLogger().logOnStart(this); 
+    }
+    
+    @Override
+    protected void onStop() {
+		Collect.getInstance().getActivityLogger().logOnStop(this); 
+    	super.onStop();
+    }
     
     private void createErrorDialog(String errorMsg, final boolean shouldExit) {
+        Collect.getInstance().getActivityLogger().logAction(this, "createErrorDialog", "show");
+
         mAlertDialog = new AlertDialog.Builder(this).create();
         mAlertDialog.setIcon(android.R.drawable.ic_dialog_info);
         mAlertDialog.setMessage(errorMsg);
@@ -112,6 +147,8 @@ public class InstanceChooserList extends ListActivity {
             public void onClick(DialogInterface dialog, int i) {
                 switch (i) {
                     case DialogInterface.BUTTON1:
+                        Collect.getInstance().getActivityLogger().logAction(this, "createErrorDialog", 
+                        		shouldExit ? "exitApplication" : "OK");
                         if (shouldExit) {
                             finish();
                         }

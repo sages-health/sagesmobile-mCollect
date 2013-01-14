@@ -14,18 +14,18 @@
 
 package org.odk.collect.android.widgets;
 
-import java.util.Date;
-
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.TimeData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import org.odk.collect.android.application.Collect;
 
 import android.content.Context;
 import android.view.Gravity;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TimePicker;
+
+import java.util.Date;
 
 /**
  * Displays a TimePicker widget.
@@ -41,6 +41,7 @@ public class TimeWidget extends QuestionWidget {
         super(context, prompt);
 
         mTimePicker = new TimePicker(getContext());
+        mTimePicker.setId(QuestionWidget.newUniqueId());
         mTimePicker.setFocusable(!prompt.isReadOnly());
         mTimePicker.setEnabled(!prompt.isReadOnly());
 
@@ -67,6 +68,14 @@ public class TimeWidget extends QuestionWidget {
             clearAnswer();
         }
 
+        mTimePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+			@Override
+			public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+            	Collect.getInstance().getActivityLogger().logInstanceAction(TimeWidget.this, "onTimeChanged", 
+            			String.format("%1$02d:%2$02d",hourOfDay, minute), mPrompt.getIndex());
+			}
+		});
+
         setGravity(Gravity.LEFT);
         addView(mTimePicker);
 
@@ -86,6 +95,7 @@ public class TimeWidget extends QuestionWidget {
 
     @Override
     public IAnswerData getAnswer() {
+    	clearFocus();
         // use picker time, convert to today's date, store as utc
         DateTime ldt =
             (new DateTime()).withTime(mTimePicker.getCurrentHour(), mTimePicker.getCurrentMinute(),

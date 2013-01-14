@@ -15,7 +15,7 @@
 package org.odk.collect.android.widgets;
 
 import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.IntegerData;
+import org.javarosa.core.model.data.StringData;
 import org.javarosa.form.api.FormEntryPrompt;
 
 import android.content.Context;
@@ -31,7 +31,7 @@ import android.util.TypedValue;
 public class StringNumberWidget extends StringWidget {
 
     public StringNumberWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+        super(context, prompt, true);
 
         mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
         mAnswer.setInputType(InputType.TYPE_NUMBER_FLAG_SIGNED);
@@ -44,7 +44,7 @@ public class StringNumberWidget extends StringWidget {
             @Override
             protected char[] getAcceptedChars() {
                 char[] accepted = {
-                        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', ' '
+                        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', ' ', ','
                 };
                 return accepted;
             }
@@ -56,24 +56,27 @@ public class StringNumberWidget extends StringWidget {
             setClickable(false);
         }
 
-        Integer i = null;
+        String s = null;
         if (prompt.getAnswerValue() != null)
-            i = (Integer) prompt.getAnswerValue().getValue();
+            s = (String) prompt.getAnswerValue().getValue();
 
-        if (i != null) {
-            mAnswer.setText(i.toString());
+        if (s != null) {
+            mAnswer.setText(s);
         }
+        
+        setupChangeListener();
     }
 
 
     @Override
     public IAnswerData getAnswer() {
-        String s = mAnswer.getText().toString();
+    	clearFocus();
+    	String s = mAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;
         } else {
             try {
-                return new IntegerData(Integer.parseInt(s));
+                return new StringData(s);
             } catch (Exception NumberFormatException) {
                 return null;
             }

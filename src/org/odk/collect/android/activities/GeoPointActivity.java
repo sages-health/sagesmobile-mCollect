@@ -14,7 +14,12 @@
 
 package org.odk.collect.android.activities;
 
+import java.text.DecimalFormat;
+import java.util.List;
+
 import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.GeoPointWidget;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -28,9 +33,6 @@ import android.location.LocationProvider;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import java.text.DecimalFormat;
-import java.util.List;
-
 public class GeoPointActivity extends Activity implements LocationListener {
 
     private ProgressDialog mLocationDialog;
@@ -38,14 +40,21 @@ public class GeoPointActivity extends Activity implements LocationListener {
     private Location mLocation;
     private boolean mGPSOn = false;
     private boolean mNetworkOn = false;
-
-    // default location accuracy
-    private static double LOCATION_ACCURACY = 5;
+    private double mLocationAccuracy;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();
+        
+        mLocationAccuracy = GeoPointWidget.DEFAULT_LOCATION_ACCURACY;
+        if (intent != null && intent.getExtras() != null) {
+        	if ( intent.hasExtra(GeoPointWidget.ACCURACY_THRESHOLD) ) {
+        		mLocationAccuracy = intent.getDoubleExtra(GeoPointWidget.ACCURACY_THRESHOLD, GeoPointWidget.DEFAULT_LOCATION_ACCURACY);
+        	}
+        }
 
         setTitle(getString(R.string.app_name) + " > " + getString(R.string.get_location));
 
@@ -97,12 +106,24 @@ public class GeoPointActivity extends Activity implements LocationListener {
         }
         mLocationDialog.show();
     }
-
+	
+    @Override
+    protected void onStart() {
+    	super.onStart();
+		Collect.getInstance().getActivityLogger().logOnStart(this); 
+    }
+    
+    @Override
+    protected void onStop() {
+		Collect.getInstance().getActivityLogger().logOnStop(this); 
+    	super.onStop();
+    }
 
     /**
      * Sets up the look and actions for the progress dialog while the GPS is searching.
      */
     private void setupLocationDialog() {
+    	Collect.getInstance().getActivityLogger().logInstanceAction(this, "setupLocationDialog", "show");
         // dialog displayed while fetching gps location
         mLocationDialog = new ProgressDialog(this);
         DialogInterface.OnClickListener geopointButtonListener =
@@ -111,9 +132,11 @@ public class GeoPointActivity extends Activity implements LocationListener {
                 public void onClick(DialogInterface dialog, int which) {
                     switch (which) {
                         case DialogInterface.BUTTON1:
+                            Collect.getInstance().getActivityLogger().logInstanceAction(this, "acceptLocation", "OK");
                             returnLocation();
                             break;
                         case DialogInterface.BUTTON2:
+                            Collect.getInstance().getActivityLogger().logInstanceAction(this, "cancelLocation", "cancel");
                             mLocation = null;
                             finish();
                             break;
@@ -154,7 +177,7 @@ public class GeoPointActivity extends Activity implements LocationListener {
             mLocationDialog.setMessage(getString(R.string.location_provider_accuracy,
                 mLocation.getProvider(), truncateDouble(mLocation.getAccuracy())));
 
-            if (mLocation.getAccuracy() <= LOCATION_ACCURACY) {
+            if (mLocation.getAccuracy() <= mLocationAccuracy) {
                 returnLocation();
             }
         }

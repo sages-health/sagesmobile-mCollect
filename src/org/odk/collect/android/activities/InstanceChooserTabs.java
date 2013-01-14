@@ -15,6 +15,7 @@
 package org.odk.collect.android.activities;
 
 import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
 
 import android.app.TabActivity;
 import android.content.Intent;
@@ -33,13 +34,12 @@ import android.widget.TextView;
  */
 public class InstanceChooserTabs extends TabActivity {
 
-    // count for tab menu bar
-    private static int mSavedCount;
-    private static int mCompletedCount;
     private static final String SAVED_TAB = "saved_tab";
     private static final String COMPLETED_TAB = "completed_tab";
-    private static final int FONT_SIZE = 21;
 
+    // count for tab menu bar
+    private int mSavedCount;
+    private int mCompletedCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,14 +67,16 @@ public class InstanceChooserTabs extends TabActivity {
         LinearLayout ll = (LinearLayout) tabHost.getChildAt(0);
         TabWidget tw = (TabWidget) ll.getChildAt(0);
 
+        int fontsize = Collect.getQuestionFontsize();
+
         RelativeLayout rls = (RelativeLayout) tw.getChildAt(0);
         TextView tvs = (TextView) rls.getChildAt(1);
-        tvs.setTextSize(FONT_SIZE);
+        tvs.setTextSize(fontsize);
         tvs.setPadding(0, 0, 0, 6);
 
         RelativeLayout rlc = (RelativeLayout) tw.getChildAt(1);
         TextView tvc = (TextView) rlc.getChildAt(1);
-        tvc.setTextSize(FONT_SIZE);
+        tvc.setTextSize(fontsize);
         tvc.setPadding(0, 0, 0, 6);
 
         if (mSavedCount >= mCompletedCount) {

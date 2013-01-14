@@ -31,8 +31,24 @@ import android.util.TypedValue;
  */
 public class IntegerWidget extends StringWidget {
 
+	private Integer getIntegerAnswerValue() {
+		IAnswerData dataHolder = mPrompt.getAnswerValue();
+		Integer d = null;
+        if (dataHolder != null) {
+        	Object dataValue = dataHolder.getValue();
+        	if ( dataValue != null ) {
+        		if (dataValue instanceof Double){
+	                d =  Integer.valueOf(((Double) dataValue).intValue());
+	            } else {
+	                d =  (Integer)dataValue;
+	            }
+        	}
+        }
+        return d;
+	}
+
     public IntegerWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+        super(context, prompt, true);
 
         mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
         mAnswer.setInputType(InputType.TYPE_NUMBER_FLAG_SIGNED);
@@ -55,19 +71,20 @@ public class IntegerWidget extends StringWidget {
             setClickable(false);
         }
 
-        Integer i = null;
-        if (prompt.getAnswerValue() != null)
-            i = (Integer) prompt.getAnswerValue().getValue();
+        Integer i = getIntegerAnswerValue();
 
         if (i != null) {
             mAnswer.setText(i.toString());
         }
+        
+        setupChangeListener();
     }
 
 
     @Override
     public IAnswerData getAnswer() {
-        String s = mAnswer.getText().toString();
+    	clearFocus();
+    	String s = mAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;
         } else {

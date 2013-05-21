@@ -19,23 +19,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.cookie.SM;
-import org.apache.http.protocol.HttpContext;
-import org.jhuapl.edu.sages.sandbox.xformparser.SAXParseSMS;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.listeners.InstanceSMSerListener;
@@ -43,9 +34,7 @@ import org.odk.collect.android.preferences.PreferencesSmsActivity;
 import org.odk.collect.android.provider.InstanceProviderAPI;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
 import org.odk.collect.android.utilities.SAXParserSMSUtil;
-import org.odk.collect.android.utilities.WebUtils;
 
-import src.sandbox.DataChunker;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -55,6 +44,9 @@ import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
+import edu.jhuapl.sages.mobile.lib.odk.DataChunker;
+import edu.jhuapl.sages.mobile.lib.odk.SAXParseSMS;
+import edu.jhuapl.sages.mobile.lib.odk.SagesOdkMessage;
 
 /**
  * Background task for uploading completed forms.
@@ -364,7 +356,7 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     } catch (Exception e){
                     	
                     }
-            		Pattern pattern = Pattern.compile("([\\P{InBasic Latin}]+)");
+/*            		Pattern pattern = Pattern.compile("([\\P{InBasic Latin}]+)");
             		Matcher matcher = pattern.matcher(smsText);
             		boolean containsUnicode = matcher.find();
 					System.out.println("did it match? " + containsUnicode);
@@ -406,7 +398,12 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     	int sec = cal.get(Calendar.SECOND);
                     	String txId = dayOfYear + "" + hr + "" + min + "" + sec;
                     	//applyHeaders(dividedBlob, txId);
-                    }
+                    }*/
+
+                    SagesOdkMessage sagesOdkMessage = new SagesOdkMessage(smsText, formId, id);
+                    
+                    ArrayList<String> dividedBlob = sagesOdkMessage.getDividedBlob();
+
                     // now onto sending the SMS
                     SmsManager smsmanger = SmsManager.getDefault();
                     if (dividedBlob !=  null){

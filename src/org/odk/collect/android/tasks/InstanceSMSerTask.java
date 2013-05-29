@@ -356,22 +356,30 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     } catch (Exception e){
                     	
                     }
-
+//smsText = "kdf . 1 MmmmnnnnnnnmmmmmmmmmmmmmmmmMmmmnnnnnnnmmmmmmmmmmmmmmmmMmmmnnnnnnnmmmmmmmmmmmmmmmmMmmmnnnnnnnmmmmmmmmmmmmmmmmMmmmnnnnnnnmmmmmmmmmmmmmmmm 2013-05-20 1 0 1 2 99 58.0 58 36 88 45.0 ' 1 2 3 4 5 6 7 8 ' 1 ' 1 2 3 4 5 6 7 8 9 10 11 12 13 '";
+//					SagesOdkMessage sagesOdkMessage = new SagesOdkMessage(smsText, "kdf", id);
                     SagesOdkMessage sagesOdkMessage = new SagesOdkMessage(smsText, formId, id);
+                    sagesOdkMessage.configure(true);
+                    
                     ArrayList<String> dividedBlob = sagesOdkMessage.getDividedBlob();
 
                     // now onto sending the SMS
                     SmsManager smsmanger = SmsManager.getDefault();
-                    if (dividedBlob !=  null){
-                    	//smsmanger.sendTextMessage(smsNumber, null, "dummy test", null, null/*sentIntent, deliveryIntent*/);
-                    	smsmanger.sendMultipartTextMessage(smsNumber, null, dividedBlob, null, null/* sentIntents, deliveryIntents*/);
-                    } else
-                    if (smsText.length() > 140) {
-                    	ArrayList<String> dividedText = smsmanger.divideMessage(smsText);
-                    	smsmanger.sendMultipartTextMessage(smsNumber, null, dividedText, null, null/* sentIntents, deliveryIntents*/);
-                    } else {
-                    	smsmanger.sendTextMessage(smsNumber, null, smsText, null, null/*sentIntent, deliveryIntent*/);
-                    }
+                    smsmanger.sendMultipartTextMessage(smsNumber, null, dividedBlob, null, null/* sentIntents, deliveryIntents*/);
+
+// OLD STUFF - was experimenting with android's sms dividing method vs. own as relates to preserving our headers                    
+//                    
+//                    if (dividedBlob !=  null){
+//                    	//smsmanger.sendTextMessage(smsNumber, null, "dummy test", null, null/*sentIntent, deliveryIntent*/);
+//                    	smsmanger.sendMultipartTextMessage(smsNumber, null, dividedBlob, null, null/* sentIntents, deliveryIntents*/);
+//                    } else
+//                    if (smsText.length() > 140) {
+//                    	ArrayList<String> dividedText = smsmanger.divideMessage(smsText);
+//                    	smsmanger.sendMultipartTextMessage(smsNumber, null, dividedText, null, null/* sentIntents, deliveryIntents*/);
+//                    } else {
+//                    	smsmanger.sendTextMessage(smsNumber, null, smsText, null, null/*sentIntent, deliveryIntent*/);
+//                    }
+
 // TODO: POKU this skipped, think it's for attachments not sure but prolly dont need it either                    
 //                    for (; j < files.size(); j++) {
 //                        File f = files.get(j);

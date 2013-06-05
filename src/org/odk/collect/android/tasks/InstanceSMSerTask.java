@@ -365,7 +365,14 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
 
                     // now onto sending the SMS
                     SmsManager smsmanger = SmsManager.getDefault();
-                    smsmanger.sendMultipartTextMessage(smsNumber, null, dividedBlob, null, null/* sentIntents, deliveryIntents*/);
+                    //instead of this: 06/05/13 confirming issues that STANCHF reported during Scrum Mtg Mid May
+//                    smsmanger.sendMultipartTextMessage(smsNumber, null, dividedBlob, null, null/* sentIntents, deliveryIntents*/);
+                    
+                    // do this
+                    for (String part : dividedBlob){
+                    	smsmanger.sendTextMessage(smsNumber, null, part, null, null);
+                    	Log.d(this.getClass().getCanonicalName(), "Length(" + part.length() + ") of Sent SMS: "  + part);
+                    }
 
 // OLD STUFF - was experimenting with android's sms dividing method vs. own as relates to preserving our headers                    
 //                    

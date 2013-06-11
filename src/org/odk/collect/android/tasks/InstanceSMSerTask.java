@@ -44,6 +44,7 @@ import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
+import edu.jhuapl.sages.mobile.lib.SharedObjects;
 import edu.jhuapl.sages.mobile.lib.odk.DataChunker;
 import edu.jhuapl.sages.mobile.lib.odk.SAXParseSMS;
 import edu.jhuapl.sages.mobile.lib.odk.SagesOdkMessage;
@@ -359,7 +360,7 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
 //smsText = "kdf . 1 MmmmnnnnnnnmmmmmmmmmmmmmmmmMmmmnnnnnnnmmmmmmmmmmmmmmmmMmmmnnnnnnnmmmmmmmmmmmmmmmmMmmmnnnnnnnmmmmmmmmmmmmmmmmMmmmnnnnnnnmmmmmmmmmmmmmmmm 2013-05-20 1 0 1 2 99 58.0 58 36 88 45.0 ' 1 2 3 4 5 6 7 8 ' 1 ' 1 2 3 4 5 6 7 8 9 10 11 12 13 '";
 //					SagesOdkMessage sagesOdkMessage = new SagesOdkMessage(smsText, "kdf", id);
                     SagesOdkMessage sagesOdkMessage = new SagesOdkMessage(smsText, formId, id);
-                    sagesOdkMessage.configure(true);
+                    sagesOdkMessage.configure(SharedObjects.isEncryptionOn());
                     
                     ArrayList<String> dividedBlob = sagesOdkMessage.getDividedBlob();
 

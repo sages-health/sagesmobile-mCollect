@@ -63,7 +63,7 @@
             android:authorities="org.odk.collect.android.provider.odk.instances" />
 
         
-        <receiver android:name="edu.jhuapl.sages.mobile.lib.receiver.SagesSmsReceiver">
+        <receiver android:name="edu.jhuapl.sages.mobile.lib.receiver.OdkSagesSmsReceiver">
 		    <intent-filter>
 				<action android:name="android.provider.Telephony.SMS_RECEIVED"></action>
 			</intent-filter>
@@ -78,10 +78,6 @@
         <activity 
             android:name="edu.jhuapl.sages.mobile.lib.OdkSecuritySetupActivity"
             android:label="ODK Security Setup">
-<!--             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter> -->
         </activity>
         
         <activity

@@ -1,0 +1,6 @@
+.gitignore
+!.classpath
+default.properties
+project.properties
+gen/
+bin/

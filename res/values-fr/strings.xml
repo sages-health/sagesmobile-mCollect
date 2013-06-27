@@ -11,6 +11,8 @@ the specific language governing permissions and limitations under the
 License.
 -->
 <resources>
+<string name="security">SMS security settings</string>
+<string name="sms_security">SMS Security</string>
 <string name="accept_location">Enregistrer le lieu</string>
 <string name="accuracy">Précision</string>
 <string name="activity_not_found">Pas d\'activité pour gérer: %s</string>

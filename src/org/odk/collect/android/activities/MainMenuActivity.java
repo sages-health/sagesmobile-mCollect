@@ -58,7 +58,6 @@ public class MainMenuActivity extends Activity {
     private static final int MENU_ADMIN = Menu.FIRST + 1;
 
     // buttons
-    private Button mSetupSecurityButton;
     private Button mEnterDataButton;
     private Button mManageFilesButton;
     private Button mSendDataButton;
@@ -106,18 +105,6 @@ public class MainMenuActivity extends Activity {
         mAdminPreferences = this.getSharedPreferences(
                 AdminPreferencesActivity.ADMIN_PREFERENCES, 0);
 
-        // enter data button. expects a result.
-        mSetupSecurityButton = (Button) findViewById(R.id.setup_security);
-        mSetupSecurityButton.setText("SETUP SECURITY");
-//        mSetupSecurityButton.setText(getString(R.string.enter_data_button));
-        mSetupSecurityButton.setOnClickListener(new OnClickListener() {
-        	@Override
-        	public void onClick(View v) {
-        		Collect.getInstance().getActivityLogger().logAction(this, "setupSecurity", "click");
-        		Intent i = new Intent(getApplicationContext(), OdkSecuritySetupActivity.class);
-        		startActivity(i);
-        	}
-        });
         
         // enter data button. expects a result.
         mEnterDataButton = (Button) findViewById(R.id.enter_data);

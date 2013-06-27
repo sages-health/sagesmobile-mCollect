@@ -11,6 +11,8 @@
 		License.
 	-->
 <resources>
+<string name="security">SMS security settings</string>
+<string name="sms_security">SMS Security</string>
 <string name="accept_location">Obtener localización</string>
 <string name="accuracy">Precisión</string>
 <string name="activity_not_found">No se encontró actividad para manejar: %s</string>

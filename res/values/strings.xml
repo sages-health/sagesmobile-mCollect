@@ -255,6 +255,8 @@
 <string name="enter_admin_password">Enter Admin Password</string>
 <string name="found_in_menu">Found using Menu button in Form Entry</string>
 
+<string name="security">SMS security settings</string>
+<string name="sms_security">SMS Security</string>
 <string name="sms">SMS submission settings</string>
 <string name="sms_settings">SMS Settings</string>
 <string name="override_xformsettings">Override XForm Settings</string>

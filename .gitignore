@@ -1,5 +1,6 @@
 .gitignore
 !.classpath
+!./settings
 default.properties
 project.properties
 gen/

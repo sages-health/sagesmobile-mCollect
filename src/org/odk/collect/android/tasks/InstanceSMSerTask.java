@@ -14,26 +14,9 @@
 
 package org.odk.collect.android.tasks;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.odk.collect.android.R;
-import org.odk.collect.android.application.Collect;
-import org.odk.collect.android.listeners.InstanceSMSerListener;
-import org.odk.collect.android.preferences.PreferencesSmsActivity;
-import org.odk.collect.android.provider.InstanceProviderAPI;
-import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
-import org.odk.collect.android.utilities.SAXParserSMSUtil;
+import edu.jhuapl.sages.mobile.lib.SharedObjects;
+import edu.jhuapl.sages.mobile.lib.odk.SAXParseSMS;
+import edu.jhuapl.sages.mobile.lib.odk.SagesOdkMessage;
 
 import android.content.ContentValues;
 import android.content.SharedPreferences;
@@ -44,15 +27,30 @@ import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
-import edu.jhuapl.sages.mobile.lib.SharedObjects;
-import edu.jhuapl.sages.mobile.lib.odk.DataChunker;
-import edu.jhuapl.sages.mobile.lib.odk.SAXParseSMS;
-import edu.jhuapl.sages.mobile.lib.odk.SagesOdkMessage;
+
+import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.listeners.InstanceSMSerListener;
+import org.odk.collect.android.preferences.PreferencesSmsActivity;
+import org.odk.collect.android.provider.InstanceProviderAPI;
+import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
+import org.odk.collect.android.utilities.SAXParserSMSUtil;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  * Background task for uploading completed forms.
  * 
- * @author Adjoa Poku (adjoa.poku@jhuapl.edu)
+ * Modified by SAGES
  */
 public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, String>> {
 

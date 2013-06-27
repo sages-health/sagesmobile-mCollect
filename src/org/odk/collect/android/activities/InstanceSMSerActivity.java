@@ -47,7 +47,7 @@ import android.widget.Toast;
 /**
  * Activity to upload completed forms.
  * 
- * @author Adjoa Poku(adjoa.poku@jhuapl.edu)
+ * for sages
  */
 public class InstanceSMSerActivity extends Activity implements InstanceSMSerListener {
     private final static String t = "InstanceSMSerActivity";

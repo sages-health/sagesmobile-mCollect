@@ -39,7 +39,7 @@ import java.util.ArrayList;
  * Responsible for displaying all the valid forms in the forms directory. Stores the path to
  * selected form for use by {@link MainMenuActivity}.
  * 
- * @author Adjoa Poku (adjoa.poku@jhuapl.edu)
+ * for sages
  */
 
 public class InstanceSMSerList extends ListActivity {

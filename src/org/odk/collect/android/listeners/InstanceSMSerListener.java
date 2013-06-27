@@ -18,7 +18,7 @@ import java.net.URI;
 import java.util.HashMap;
 
 /**
- * @author Adjoa Poku(adjoa.poku@jhuapl.edu)
+ * for sages
  */
 public interface InstanceSMSerListener {
     void uploadingComplete(HashMap<String, String> result);

@@ -123,5 +123,26 @@
             android:summary="@string/mark_as_finalized_summary"
             android:title="@string/mark_as_finished" />
     </PreferenceCategory>
-
+    <PreferenceCategory
+			android:title="@string/sms">
+			<PreferenceScreen
+				android:title="@string/sms_settings"
+		 		>
+				<intent
+					android:action="android.intent.action.VIEW"
+		      android:targetPackage="org.odk.collect.android"
+		      android:targetClass="org.odk.collect.android.preferences.PreferencesSmsActivity"/>
+			</PreferenceScreen> 
+		</PreferenceCategory>
+	  <PreferenceCategory
+			android:title="@string/security">
+			<PreferenceScreen
+				android:title="@string/sms_security"
+		 		>
+				<intent
+					android:action="android.intent.action.VIEW"
+		      android:targetPackage="org.odk.collect.android"
+		      android:targetClass="edu.jhuapl.sages.mobile.lib.OdkSecuritySetupActivity"/>
+			</PreferenceScreen> 
+		</PreferenceCategory>
 </PreferenceScreen>

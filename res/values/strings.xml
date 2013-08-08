@@ -9,6 +9,8 @@
 		CONDITIONS OF ANY KIND, either express or implied. See the License for
 		the specific language governing permissions and limitations under the
 		License.
+		
+		Some translations were added or updated by JHU/APL
 -->
 <resources>
 <string name="accept_location">Record Location</string>
@@ -277,5 +279,11 @@
 <string name="delimiter">Delimiter</string>
 <string name="sum_delimiter">Delimiter to separate values</string>
 <string name="default_delimiter"> </string>
+
+<string name="view_sms_button_text">View SMS</string>
+
+<string name="reply_on_in_progress">Message parsing in progress</string>
+<string name="reply_on_success">Message parsed successfully, thank you</string>
+<string name="reply_on_failed">Unable to understand your message, please try again</string>
 
 </resources>

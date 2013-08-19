@@ -24,6 +24,8 @@ import android.provider.BaseColumns;
  */
 public final class InstanceProviderAPI {
     public static final String AUTHORITY = "org.odk.collect.android.provider.odk.instances";
+    public static final String DATABASE_NAME = "instances.db";
+    public static final String INSTANCES_TABLE_NAME = "instances";
 
     // This class cannot be instantiated
     private InstanceProviderAPI() {}

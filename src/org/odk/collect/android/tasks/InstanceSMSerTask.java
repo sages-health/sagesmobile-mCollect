@@ -18,9 +18,13 @@ import edu.jhuapl.sages.mobile.lib.SharedObjects;
 import edu.jhuapl.sages.mobile.lib.odk.SAXParseSMS;
 import edu.jhuapl.sages.mobile.lib.odk.SagesOdkMessage;
 
+import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -32,14 +36,21 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.listeners.InstanceSMSerListener;
 import org.odk.collect.android.preferences.PreferencesSmsActivity;
+import org.odk.collect.android.provider.InstanceProvider;
 import org.odk.collect.android.provider.InstanceProviderAPI;
+import org.odk.collect.android.provider.SMSProviderAPI;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
+import org.odk.collect.android.provider.SMSProvider.DatabaseHelper;
 import org.odk.collect.android.utilities.SAXParserSMSUtil;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +110,7 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                 publishProgress(c.getPosition() + 1, c.getCount());
                 String instance = c.getString(c.getColumnIndex(InstanceColumns.INSTANCE_FILE_PATH));
                 String id = c.getString(c.getColumnIndex(InstanceColumns._ID));
+                String name = c.getString(c.getColumnIndex(InstanceColumns.DISPLAY_NAME));
                 Uri toUpdate = Uri.withAppendedPath(InstanceColumns.CONTENT_URI, id);
 
                 String urlString = c.getString(c.getColumnIndex(InstanceColumns.SUBMISSION_URI));
@@ -107,7 +119,6 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     urlString = settings.getString(PreferencesSmsActivity.KEY_GSMSERVER_NUM, null);
                     String submissionUrl = "sms://";
                     		//settings.getString(PreferencesSmsActivity.KEY_SUBMISSION_URL, "/submission");
-                    urlString = submissionUrl + urlString;
                 }
 
             	final String formIdColName = "jrFormId";
@@ -361,6 +372,32 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     sagesOdkMessage.configure(SharedObjects.isEncryptionOn());
                     
                     ArrayList<String> dividedBlob = sagesOdkMessage.getDividedBlob();
+                    
+                    if(dividedBlob != null && !dividedBlob.isEmpty()) {
+                    	
+                    	String[] split1 = dividedBlob.get(0).split("\\|");
+                    	String transactionID = dividedBlob.get(0).split("\\|")[2].split(":")[0];
+                    	
+                    	//Open up cursor to sms.db
+                    	DatabaseHelper dbHelper = new DatabaseHelper(SMSProviderAPI.DATABASE_NAME);
+                    	SQLiteDatabase db = dbHelper.getWritableDatabase();
+                    	
+                    	//Open up cursor to instances.db
+                    	InstanceProvider.DatabaseHelper dbHelper2 = new InstanceProvider.DatabaseHelper(InstanceProviderAPI.DATABASE_NAME);
+                    	SQLiteDatabase db2 = dbHelper2.getReadableDatabase();
+                    	
+                    	Cursor queryForName = db2.rawQuery("SELECT "+InstanceProviderAPI.InstanceColumns.DISPLAY_NAME+" FROM "+InstanceProviderAPI.INSTANCES_TABLE_NAME+" WHERE "+InstanceProviderAPI.InstanceColumns._ID+" = "+id, null);
+                    	queryForName.moveToFirst();
+                    	String displayName = queryForName.getString(0);
+                    	
+                    	String timestamp = "Sent on "+(new SimpleDateFormat(Collect.getInstance().getString(R.string.date_format))).format(new Date());
+                    	db.execSQL("UPDATE "+SMSProviderAPI.SMS_TABLE_NAME+" SET "+SMSProviderAPI.SMSColumns.TX_ID+" = "+transactionID+", "+SMSProviderAPI.SMSColumns.TIMESTAMP+" = '"+timestamp+"' WHERE "+SMSProviderAPI.SMSColumns.DISPLAY_NAME+" = '"+displayName+"' AND "+SMSProviderAPI.SMSColumns.INSTANCE_KEY_ID+" = "+id+";");
+                    	
+                    	db.close();
+                        dbHelper.close();
+                        db2.close();
+                        dbHelper2.close();
+                    }
 
                     // now onto sending the SMS
                     SmsManager smsmanger = SmsManager.getDefault();
@@ -369,7 +406,11 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
                     
                     // do this
                     for (String part : dividedBlob){
-                    	smsmanger.sendTextMessage(smsNumber, null, part, null, null);
+                    	Intent bcrIntent =  new Intent(Collect.getInstance().getApplicationContext(), BroadcastReceiveSent.class);
+                    	bcrIntent.putExtra("body", part);
+                    	PendingIntent pi = PendingIntent.getBroadcast(Collect.getInstance().getApplicationContext(), 123456789, bcrIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    	//TODO filipdt1: make BroadcastReceiver PendingIntent for sent SMS
+                    	smsmanger.sendTextMessage(smsNumber, null, part, pi, null);
                     	Log.d(this.getClass().getCanonicalName(), "Length(" + part.length() + ") of Sent SMS: "  + part);
                     }
 

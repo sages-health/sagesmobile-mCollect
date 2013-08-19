@@ -64,6 +64,7 @@ public class MainMenuActivity extends Activity {
     private Button mSendDataSmsButton;
     private Button mReviewDataButton;
     private Button mGetFormsButton;
+    private Button mViewMessagesButton;
 
     private View mReviewSpacer;
     private View mGetFormsSpacer;
@@ -177,6 +178,18 @@ public class MainMenuActivity extends Activity {
                 Collect.getInstance().getActivityLogger()
                         .logAction(this, "deleteSavedForms", "click");
                 Intent i = new Intent(getApplicationContext(), FileManagerTabs.class);
+                startActivity(i);
+            }
+        });
+        
+        mViewMessagesButton = (Button) findViewById(R.id.view_sms);
+        mViewMessagesButton.setText(getString(R.string.view_sms_button_text));
+        mViewMessagesButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Collect.getInstance().getActivityLogger()
+                        .logAction(this, "viewSMS", "click");
+                Intent i = new Intent(getApplicationContext(), SMSViewer.class);
                 startActivity(i);
             }
         });

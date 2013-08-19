@@ -280,10 +280,32 @@
 <string name="sum_delimiter">Delimiter to separate values</string>
 <string name="default_delimiter"> </string>
 
-<string name="view_sms_button_text">View SMS</string>
 
+<!-- These strings have not be translated into additional languages -->
+<string name="view_sms_button_text">View SMS</string>
 <string name="reply_on_in_progress">Message parsing in progress</string>
 <string name="reply_on_success">Message parsed successfully, thank you</string>
 <string name="reply_on_failed">Unable to understand your message, please try again</string>
+<string name="date_format">MM/dd/yy HH:mm:ss</string>
+<string name="receiver_date_format">EEE, MMMMMMM dd, yyyy HH:mm:ss</string>
+<string name="status_on_success">Successfully Parsed</string>
+<string name="status_on_in_progress">Parse in Progress</string>
+<string name="status_on_failed">Parse Failed</string>
+<string name="status_on_unknown">State Unknown</string>
+<string name="status_on_failed_to_insert">Insert Failed</string>
+<string name="status_on_failed_to_send">Failed to Send Form</string>
+<string name="timestamp_success">Parsed on</string>
+<string name="timestamp_in_progress">Parsing since</string>
+<string name="timestamp_unknown">Sent on</string>
+<string name="timestamp_failed">Failed to Parse on</string>
+<string name="unknown_response">Unknown Response: </string>
+<string name="bad_message">You\'re a devious person, trying to change the status of a message</string>
+<string name="sms_filtering">Filter by Status</string>
+<string name="sms_sorting">Sort SMS</string>
+<string name="timestamp_failed_to_insert">Failed to Insert on</string>
+<string name="reply_on_failed_to_insert">Failed to Insert into Database</string>
+
+
+
 
 </resources>

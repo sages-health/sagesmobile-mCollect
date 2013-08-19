@@ -59,9 +59,9 @@ public class InstanceProvider extends ContentProvider {
     /**
      * This class helps open, create, and upgrade the database file.
      */
-    private static class DatabaseHelper extends ODKSQLiteOpenHelper {
+    public static class DatabaseHelper extends ODKSQLiteOpenHelper {
 
-        DatabaseHelper(String databaseName) {
+        public DatabaseHelper(String databaseName) {
             super(Collect.METADATA_PATH, databaseName, null, DATABASE_VERSION);
         }
 

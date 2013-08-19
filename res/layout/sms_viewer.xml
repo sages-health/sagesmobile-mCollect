@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <tableRow>
+    <TextView android:id="@+id/sms_txt_view"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:textSize="25sp" />
+    
+    <TextView android:id="@+id/sms_time_txt_view"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:textSize="20sp" />
+    </tableRow> 
+	<tableRow>
+    <TextView android:id="@+id/sms_status_txt_view"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:textSize="18sp" />
+    </tableRow> 
+
+</TableLayout>

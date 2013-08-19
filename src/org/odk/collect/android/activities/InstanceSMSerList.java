@@ -17,11 +17,15 @@ package org.odk.collect.android.activities;
 import org.odk.collect.android.R;
 import org.odk.collect.android.preferences.PreferencesActivity;
 import org.odk.collect.android.provider.InstanceProviderAPI;
+import org.odk.collect.android.provider.SMSProviderAPI;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
+import org.odk.collect.android.provider.SMSProvider.DatabaseHelper;
+import org.odk.collect.android.provider.InstanceProvider;
 
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -64,6 +68,8 @@ public class InstanceSMSerList extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.instance_uploader_list);
+        
+        
 
         mUploadButton = (Button) findViewById(R.id.upload_button);
         mUploadButton.setOnClickListener(new OnClickListener() {
@@ -72,8 +78,35 @@ public class InstanceSMSerList extends ListActivity {
             public void onClick(View arg0) {
                 if (mSelected.size() > 0) {
                     // items selected
+                	
+                	//Open up cursor to sms.db
+                	DatabaseHelper dbHelper = new DatabaseHelper(SMSProviderAPI.DATABASE_NAME);
+                	SQLiteDatabase db = dbHelper.getWritableDatabase();
+                	
+                	//Open up cursor to instances.db
+                	InstanceProvider.DatabaseHelper dbHelper2 = new InstanceProvider.DatabaseHelper(InstanceProviderAPI.DATABASE_NAME);
+                	SQLiteDatabase db2 = dbHelper2.getReadableDatabase();
+                	
                     uploadSelectedFiles();
                     mToggled = false;
+                    for(Long element: mSelected) {
+                    	Cursor query = db2.rawQuery("SELECT "+InstanceProviderAPI.InstanceColumns.DISPLAY_NAME+" FROM "+InstanceProviderAPI.INSTANCES_TABLE_NAME+" WHERE "+InstanceProviderAPI.InstanceColumns._ID+" = "+element, null);
+                    	query.moveToFirst();
+                    	String name = query.getString(0);
+                    	
+                    	db.execSQL("INSERT INTO "+SMSProviderAPI.SMS_TABLE_NAME+" (" + 
+                    			SMSProviderAPI.SMSColumns.DISPLAY_NAME + ", "+
+                    			SMSProviderAPI.SMSColumns.FORM_RECEIVED + ", "+
+                    			SMSProviderAPI.SMSColumns.FORM_PARSED +", "+
+                    			SMSProviderAPI.SMSColumns.INSTANCE_KEY_ID +
+                    			") VALUES ('"+name+"', 'State Unknown', 'State Unknown', '"+element+"');");
+                    }
+                    
+                    db.close();
+                    dbHelper.close();
+                    db2.close();
+                    dbHelper2.close();
+                    
                     mSelected.clear();
                     InstanceSMSerList.this.getListView().clearChoices();
                     mUploadButton.setEnabled(false);

@@ -101,6 +101,7 @@
 <string name="main_menu">Main Menu</string>
 <string name="main_menu_details">Data collection made easier&#8230;</string>
 <string name="manage_files">Delete Saved Form</string>
+<string name="review_files">Review Saved Forms</string>
 <string name="mark_finished">Mark form as finalized</string>
 <string name="noselect_error">Sorry, you have not selected any forms!</string>
 <string name="no_connection">No network connection available</string>
@@ -122,7 +123,9 @@
 <string name="replace_barcode">Replace Barcode</string>
 <string name="replace_location">Replace Location</string>
 <string name="required_answer_error">Sorry, this response is required!</string>
+<string name="review_all_data_button">Review All Forms</string>
 <string name="review_data">Edit Saved Form</string>
+<string name="review_all_files">Review All Forms</string>
 <string name="review_data_button">Edit Saved Form</string>
 <string name="saved_data">Incomplete (%s)</string>
 <string name="save_all_answers">Save Form</string>
@@ -277,5 +280,6 @@
 <string name="delimiter">Delimiter</string>
 <string name="sum_delimiter">Delimiter to separate values</string>
 <string name="default_delimiter"> </string>
+
 
 </resources>

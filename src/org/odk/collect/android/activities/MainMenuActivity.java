@@ -60,6 +60,7 @@ public class MainMenuActivity extends Activity {
     // buttons
     private Button mEnterDataButton;
     private Button mManageFilesButton;
+    private Button mReviewerFilesButton;
     private Button mSendDataButton;
     private Button mSendDataSmsButton;
     private Button mReviewDataButton;
@@ -180,6 +181,26 @@ public class MainMenuActivity extends Activity {
                 startActivity(i);
             }
         });
+        
+        // review forms button. no result expected.
+        mReviewerFilesButton = (Button) findViewById(R.id.review_forms);
+        mReviewerFilesButton.setText(getString(R.string.review_all_files));
+        mReviewerFilesButton.setOnClickListener(new OnClickListener() {
+        	
+/*            @Override
+            public void onClick(View v) {
+                Collect.getInstance().getActivityLogger().logAction(this, "editSavedForm", "click");
+                Intent i = new Intent(getApplicationContext(), InstanceChooserList.class);
+                startActivity(i);
+            }
+        });*/
+	        @Override
+	        public void onClick(View v) {
+	        	Collect.getInstance().getActivityLogger().logAction(this, "chooseInstanceForm", "click");
+	        	Intent i = new Intent(getApplicationContext(), InstanceChooserListSages.class);
+	        	startActivity(i);
+	        }
+	    });
     }
 
     @Override
@@ -201,8 +222,10 @@ public class MainMenuActivity extends Activity {
                 true);
         if (!send) {
             mSendDataButton.setVisibility(View.GONE);
+            mReviewSpacer.setVisibility(View.GONE);
         } else {
             mSendDataButton.setVisibility(View.VISIBLE);
+            mReviewSpacer.setVisibility(View.VISIBLE);
         }
 
         boolean get_blank = sharedPreferences.getBoolean(
@@ -221,6 +244,13 @@ public class MainMenuActivity extends Activity {
             mManageFilesButton.setVisibility(View.GONE);
         } else {
             mManageFilesButton.setVisibility(View.VISIBLE);
+        }
+        
+        boolean review_all_saved = sharedPreferences.getBoolean(AdminPreferencesActivity.KEY_REVIEW_ALL_SAVED, true);
+        if (!review_all_saved) {
+        	mReviewerFilesButton.setVisibility(View.GONE);
+        } else {
+        	mReviewerFilesButton.setVisibility(View.VISIBLE);
         }
     }
 

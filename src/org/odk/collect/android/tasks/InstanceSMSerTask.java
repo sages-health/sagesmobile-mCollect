@@ -14,10 +14,10 @@
 
 package org.odk.collect.android.tasks;
 
+import edu.jhuapl.sages.mobile.lib.OdkSecuritySetupActivity;
 import edu.jhuapl.sages.mobile.lib.SharedObjects;
 import edu.jhuapl.sages.mobile.lib.odk.SAXParseSMS;
 import edu.jhuapl.sages.mobile.lib.odk.SagesOdkMessage;
-
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -359,6 +359,14 @@ public class InstanceSMSerTask extends AsyncTask<Long, Integer, HashMap<String, 
 //					SagesOdkMessage sagesOdkMessage = new SagesOdkMessage(smsText, "kdf", id);
                     SagesOdkMessage sagesOdkMessage = new SagesOdkMessage(smsText, formId, id);
                     sagesOdkMessage.configure(SharedObjects.isEncryptionOn());
+
+                    
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(Collect.getInstance());
+                    boolean isEncryptionOn = settings.getBoolean("ENCRYPTION_ON", false);
+                    sagesOdkMessage.configure(isEncryptionOn);
+                    
+//                    SharedPreferences securityPreferences = this.getSharedPreferences(OdkSecuritySetupActivity.ODK_PREFS_FILE_NAME, 0);
+//                    String aesKey = securityPreferences.getString("KEY_AESKEY", "no key set");
                     
                     ArrayList<String> dividedBlob = sagesOdkMessage.getDividedBlob();
 

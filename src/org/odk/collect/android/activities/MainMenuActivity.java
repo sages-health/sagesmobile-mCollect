@@ -14,6 +14,11 @@
 
 package org.odk.collect.android.activities;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+
+import javax.crypto.NoSuchPaddingException;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -21,6 +26,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -40,6 +46,7 @@ import org.odk.collect.android.preferences.AdminPreferencesActivity;
 import org.odk.collect.android.preferences.PreferencesActivity;
 
 import edu.jhuapl.sages.mobile.lib.OdkSecuritySetupActivity;
+import edu.jhuapl.sages.mobile.lib.SharedObjects;
 
 /**
  * Responsible for displaying buttons to launch the major activities. Launches some activities based
@@ -106,6 +113,31 @@ public class MainMenuActivity extends Activity {
         mAdminPreferences = this.getSharedPreferences(
                 AdminPreferencesActivity.ADMIN_PREFERENCES, 0);
 
+        SharedPreferences securityPreferences = this.getSharedPreferences(OdkSecuritySetupActivity.ODK_PREFS_FILE_NAME, 0);
+        boolean isEncryptionOn = securityPreferences.getBoolean("ENCRYPTION_ON", false);
+        String aesKey = securityPreferences.getString("KEY_AESKEY", "no key set");
+        
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(Collect.getInstance());
+        settings.edit().putBoolean("ENCRYPTION_ON", isEncryptionOn).commit();
+        
+        /**
+         * if prefs.isEncryptionOn = TRUE
+         *   update CryptoEngine with the saved prefs.aeskey
+         *   
+         * if prefs.isEncryptionOn = FALSE
+         */
+        
+        if (isEncryptionOn){
+        	 try {
+                 SharedObjects.reinitCryptoEngine(aesKey);
+             } catch (NoSuchAlgorithmException e) {
+//                 aeskeyview.setText("Error re-initializing system KEY from saved preferences");
+                 e.printStackTrace();
+             } catch (NoSuchPaddingException e) {
+//                 aeskeyview.setText("Error re-initializing system KEY from saved preferences");
+                 e.printStackTrace();
+             }
+        }
         
         // enter data button. expects a result.
         mEnterDataButton = (Button) findViewById(R.id.enter_data);
@@ -206,6 +238,26 @@ public class MainMenuActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        SharedPreferences securityPreferences = this.getSharedPreferences(OdkSecuritySetupActivity.ODK_PREFS_FILE_NAME, 0);
+        boolean isEncryptionOn = securityPreferences.getBoolean("ENCRYPTION_ON", false);
+        String aesKey = securityPreferences.getString("KEY_AESKEY", "no key set");
+        
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(Collect.getInstance());
+        settings.edit().putBoolean("ENCRYPTION_ON", isEncryptionOn).commit();
+        
+        if (isEncryptionOn){
+       	 try {
+                SharedObjects.reinitCryptoEngine(aesKey);
+            } catch (NoSuchAlgorithmException e) {
+//                aeskeyview.setText("Error re-initializing system KEY from saved preferences");
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+//                aeskeyview.setText("Error re-initializing system KEY from saved preferences");
+                e.printStackTrace();
+            }
+       }
+        
         SharedPreferences sharedPreferences = this.getSharedPreferences(
                 AdminPreferencesActivity.ADMIN_PREFERENCES, 0);
 

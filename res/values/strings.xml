@@ -10,7 +10,9 @@
 		the specific language governing permissions and limitations under the
 		License.
 -->
-<resources>
+<resources
+  xmlns:tools="http://schemas.android.com/tools"
+  tools:ignore="MissingTranslation">
 <string name="accept_location">Record Location</string>
 <string name="accuracy">Accuracy</string>
 <string name="activity_not_found">No activity found to handle: %s</string>
@@ -21,10 +23,9 @@
 <string name="add_repeat_no">Do Not Add</string>
 <string name="advance">forward to\nnext\nprompt</string>
 <string name="altitude">Altitude</string>
-<string name="app_name">ODK Collect</string>
 <string name="audio_file_error">No audio file was specified.</string>
 <string name="audio_file_invalid">File: %s is not a valid audio file.</string>
-<string name="backup">back to\nprevious\nprompt</string>
+<string name="backup">backward to\nprevious\nprompt</string>
 <string name="barcode_scanner_error">Sorry, Barcode Scanner is not installed!</string>
 <string name="cancel">Cancel</string>
 <string name="cancel_loading_form">Cancel</string>
@@ -35,8 +36,8 @@
 <string name="capture_image">Take Picture</string>
 <string name="capture_video">Record Video</string>
 <string name="change_language">Change Language</string>
-<string name="change_password">Password</string>
-<string name="change_server_url">Server URL</string>
+<string name="change_password">ODK Password</string>
+<string name="change_server_url">URL</string>
 <string name="change_username">ODK Username</string>
 <string name="clearanswer_confirm">Remove the response to \"%s\"?</string>
 <string name="clear_answer">Remove response</string>
@@ -46,9 +47,8 @@
 <string name="data">Saved Forms</string>
 <string name="data_saved_error">Sorry, form save failed!</string>
 <string name="data_saved_ok">Form successfully saved!</string>
-<string name="default_completed">Default to Finalized</string>
+<string name="default_completed">Default to finalized</string>
 <string name="default_completed_summary">Mark form as finalized by default</string>
-<string name="default_server_url">https://opendatakit.appspot.com</string>
 <string name="delete_confirm">Delete %s form(s)?</string>
 <string name="delete_file">Delete Selected</string>
 <string name="delete_no">Do Not Delete</string>
@@ -69,7 +69,6 @@
 <string name="entering_repeat_ask">Add New Group?</string>
 <string name="enter_data">Fill Blank Form</string>
 <string name="enter_data_button">Fill Blank Form</string>
-<string name="enter_data_description">You are at the start of \"%s\". Swipe the screen as shown below to begin.</string>
 <string name="error_occured">Error Occurred</string>
 <string name="fetching_file">Getting %1$s.\n\nForm %2$s of %3$s form(s).</string>
 <string name="file_deleted_error">Sorry, %1$s of %2$s selected form(s) failed to delete!</string>
@@ -95,7 +94,6 @@
 <string name="loading_form">Loading Form</string>
 <string name="load_remote_form_error">Error Getting Form List</string>
 <string name="location_provider_accuracy">Using %1$s. Accuracy is %2$s m.</string>
-<string name="location_provider">Using %1$s provider. Please wait for greater accuracy.</string>
 <string name="location_accuracy">Accuracy is %1$s m</string>
 <string name="longitude">Longitude</string>
 <string name="main_menu">Main Menu</string>
@@ -126,10 +124,10 @@
 <string name="review_all_data_button">Review All Forms</string>
 <string name="review_data">Edit Saved Form</string>
 <string name="review_all_files">Review All Forms</string>
-<string name="review_data_button">Edit Saved Form</string>
+<string name="review_data_button">Edit Saved Form (%s)</string>
 <string name="saved_data">Incomplete (%s)</string>
 <string name="save_all_answers">Save Form</string>
-
+<string name="save_enter_data_description">You are at the end of %s.</string>
 <string name="save_data_message">Please save data to keep your responses.</string>
 <string name="send">send</string>
 <string name="send_data_button_sms">SMS Finished Forms</string>
@@ -138,45 +136,41 @@
 <string name="saving_form">Saving Form</string>
 <string name="sending_items">Sending %1$s of %2$s form(s)</string>
 <string name="send_data">Send Finalized Form</string>
-<string name="send_data_button">Send Finalized Form</string>
+<string name="send_data_button">Send Finalized Form (%s)</string>
 <string name="send_selected_data">Send Selected</string>
 <string name="server_auth_credentials">Please enter username and password for server:\n%s</string>
 <string name="server_requires_auth">Server Requires Authentication</string>
 <string name="server_url">URL</string>
-<string name="server_preferences">Server</string>
+<string name="server_preferences">Server Settings</string>
 <string name="toggle_selected">Toggle All</string>
 <string name="trigger">OK. Please continue.</string>
 <string name="uploading_data">Sending Form</string>
 <string name="url_error">Sorry, invalid URL!</string>
 <string name="username">Username</string>
 <string name="view_hierarchy">Go To Prompt</string>
-<string name="open_data_kit">Open Data Kit</string>
 <string name="general_preferences">General Settings</string>
 <string name="click_to_web">Tap to visit http://opendatakit.org</string>
-<string name="client">Client</string>
-<string name="show_splash">Show Splash Screen</string>
+<string name="client">User Interface</string>
+<string name="show_splash">Show splash screen</string>
 <string name="show_splash_summary">Shows when application starts</string>
-<string name="splash_path">Selected Splash Image</string>
+<string name="splash_path">Selected splash image</string>
 <string name="default_splash_path">ODK Default</string>
-<string name="select_another_image">Select Another Image</string>
-<string name="use_odk_default">Use Default Image</string>
-<string name="change_splash_path">Change Image</string>
+<string name="select_another_image">Select another image</string>
+<string name="use_odk_default">Use default image</string>
+<string name="change_splash_path">Change image</string>
 <string name="show_location">Show Location</string>
 <string name="app_url">http://opendatakit.org</string>
 <string name="keep_changes">Save Changes</string>
 <string name="go_to_location">Go to Location</string>
-<string name="change_formlist_url">Form List Path (appended to Server URL)</string>
-<string name="protocol">Server Platform</string>
-<string name="change_protocol">Server Platform</string>
-<string name="change_submission_url">Submission Path (appended to Server URL)</string>
-<string name="formlist_url">Form List Path</string>
-<string name="submission_url">Submission Path</string>
-<string name="font_size">Text Font Size</string>
-<string name="change_font_size">Text Font Size</string>
+<string name="change_formlist_url">Form list path (appended to URL)</string>
+<string name="protocol">Platform</string>
+<string name="change_protocol">Platform</string>
+<string name="change_submission_url">Submission path (appended to URL)</string>
+<string name="formlist_url">Form list path</string>
+<string name="submission_url">Submission path</string>
+<string name="font_size">Text font size</string>
+<string name="change_font_size">Text font size</string>
 <string name="form_scan_starting">Scanning for forms&#8230;</string>
-<string name="powered_by_odk">Powered by Open Data Kit</string>
-<string name="default_odk_formlist">/formList</string>
-<string name="default_odk_submission">/submission</string>
 <string name="access_error">Error while accessing %s: </string>
 <string name="manifest_server_error">Manifest reply does not report an OpenRosa version &#8212; bad server?</string>
 <string name="root_element_error">Root element is not &lt;manifest\&gt; &#8212; was %s</string>
@@ -194,12 +188,10 @@
 <string name="choose_image">Choose Image</string>
 <string name="selected">Selected: </string>
 <string name="select_answer">Select Answer</string>
-<string name="save_form_as">Name this form:</string>
+<string name="save_form_as">Name this form</string>
 <string name="save_as_error">Saved name must not be blank!</string>
 <string name="edit_prompt">Edit Prompt</string>
-<string name="google_account">Select Google Account</string>
-<string name="selected_google_account_text">Google Account</string>
-<string name="google_submission_id_text">Google Collection Effort</string>
+<string name="selected_google_account_text">Google account</string>
 <string name="server_platform_odk_aggregate">ODK Aggregate</string>
 <string name="server_platform_google_forms">Google Forms</string>
 <string name="server_platform_other">Other</string>
@@ -209,8 +201,8 @@
 <string name="font_size_small">Small</string>
 <string name="font_size_extra_small">Extra Small</string>
 <string name="change_view">Change View</string>
-<string name="show_sent_and_unsent_forms">Sent and Unsent Forms</string>
-<string name="show_unsent_forms">Unsent Forms Only</string>
+<string name="show_sent_and_unsent_forms">Show Sent and Unsent Forms</string>
+<string name="show_unsent_forms">Show Unsent Forms</string>
 <string name="added_on_date_at_time">\'Added on\' EEE, MMM dd, yyyy \'at\' HH:mm</string> <!-- http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html -->
 <string name="saved_on_date_at_time">\'Saved on\' EEE, MMM dd, yyyy \'at\' HH:mm</string> <!-- http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html -->
 <string name="finalized_on_date_at_time">\'Finalized on\' EEE, MMM dd, yyyy \'at\' HH:mm</string> <!-- http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html -->
@@ -229,26 +221,14 @@
 <string name="reset_image">Reset</string>
 <string name="set_color">Set Color</string>
 <string name="select_drawing_color">Select Drawing Color</string>
-<string name="mark_as_finished">Finalizing forms</string>
 <string name="user_access_main_menu">User can access Main Menu items:</string>
 <string name="user_access_preferences">User can access Change Settings items:</string>
-<string name="change_server">Server Protocol and URL</string>
+<string name="change_server">Platform</string>
 <string name="change_username_default">Username</string>
-<string name="change_password_default">Change default password</string>
-<string name="change_google">Change Google account</string>
-<string name="change_finalized">Change default to finalized</string>
-<string name="change_font">Change font size</string>
-<string name="change_splash">Change splash screen</string>
-<string name="change_show_splash">Change show splash screen</string>
 <string name="admin_preferences">Admin Settings</string>
 <string name="admin_access_settings">Tap for admin access to settings</string>
 <string name="user_access_form_entry">User can access Form Entry items:</string>
-<string name="save_mid">Mid-form saving</string>
-<string name="save_mid_summary">Disable to allow user to save only at end of form</string>
-<string name="jump_to">Jump-to prompt</string>
-<string name="save_as">Saved form renaming</string>
-<string name="save_as_summary">Disable to prevent renaming of forms at end of form entry</string>
-<string name="mark_as_finalized_summary">Disable to save forms based on default status (as selected in Change Settings)</string>
+<string name="save_mid">Save Form</string>
 <string name="enter_new_password">Enter new password</string>
 <string name="verify_new_password">Re-enter new password</string>
 <string name="admin_password_changed">Admin password successfully changed</string>
@@ -256,7 +236,33 @@
 <string name="admin_password_mismatch">Sorry, passwords do not match!</string>
 <string name="admin_password_incorrect">Sorry, password is incorrect!</string>
 <string name="enter_admin_password">Enter Admin Password</string>
-<string name="found_in_menu">Found using Menu button in Form Entry</string>
+<string name="found_in_menu">Uncheck to hide from menu in Form Entry</string>
+<string name="autosend">Auto Send</string>
+<string name="autosend_wifi">Auto send with Wi-Fi</string>
+<string name="autosend_wifi_summary">Auto send when Wi-Fi is available</string>
+<string name="autosend_network">Auto send with network</string>
+<string name="autosend_network_summary">Auto send when network is available</string>
+<string name="found_in_main">Uncheck to hide from Main Menu</string>
+<string name="found_in_settings">Uncheck to hide from General Settings</string>
+<string name="found_at_end">Uncheck to hide from end of Form Entry</string>
+<string name="no_account">No account</string>
+<string name="save_preferences">Save Settings to Disk</string>
+<string name="form_forward">Next</string>
+<string name="form_backward">Prev</string>
+<string name="navigation">Navigation</string>
+<string name="swipe_navigation">Use horizontal swipes</string>
+<string name="buttons_navigation">Use forward/backward buttons</string>
+<string name="swipe_buttons_navigation">Use swipes and buttons</string>
+<string name="swipe_instructions">You are at the start of %s. Swipe the screen as shown below to go backward and forward.</string>
+<string name="buttons_instructions">You are at the start of %s. Tap the arrow buttons below to go backward and forward.</string>
+<string name="swipe_buttons_instructions">You are at the start of %s. Swipe the screen as shown below or tap the arrow buttons to go backward and forward.</string>
+<string name="change_url_default">URL</string>
+<string name="launch_printer">Initiate Printing</string>
+<string name="no_printer">The requested printer is not installed. Please install the printer.</string>
+<string name="constraint_behavior">Constraint processing behavior</string>
+<string name="constraint_behavior_on_swipe">Validate upon forward swipe</string>
+<string name="constraint_behavior_on_finalize">Defer validation until finalized</string>
+<string name="view_change_location">View or Change Location</string>
 
 <string name="security">SMS security settings</string>
 <string name="sms_security">SMS Security</string>
@@ -280,6 +286,4 @@
 <string name="delimiter">Delimiter</string>
 <string name="sum_delimiter">Delimiter to separate values</string>
 <string name="default_delimiter"> </string>
-
-
 </resources>

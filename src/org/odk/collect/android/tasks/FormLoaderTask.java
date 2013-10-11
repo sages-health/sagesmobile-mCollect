@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2009 University of Washington
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 
 import org.javarosa.core.model.FormDef;
@@ -39,18 +40,21 @@ import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.util.XFormUtils;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.database.ItemsetDbAdapter;
 import org.odk.collect.android.listeners.FormLoaderListener;
 import org.odk.collect.android.logic.FileReferenceFactory;
 import org.odk.collect.android.logic.FormController;
 import org.odk.collect.android.utilities.FileUtils;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Log;
+import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * Background task for loading a form.
- * 
+ *
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
@@ -83,6 +87,28 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
 			"org.javarosa.core.model.data.UncastData", // CoreModelModule
 			"org.javarosa.core.model.data.helper.BasicDataPointer" // CoreModelModule
     };
+
+    private static boolean isJavaRosaInitialized = false;
+    /**
+     * The JR implementation here does not look thread-safe or
+     * like something to be invoked more than once.
+     * Moving it within a critical section and a do-once guard.
+     */
+    private static final void initializeJavaRosa() {
+    	synchronized (t) {
+    		if ( !isJavaRosaInitialized ) {
+	            // need a list of classes that formdef uses
+	            // unfortunately, the JR registerModule() functions do more than this.
+	            // register just the classes that would have been registered by:
+	            // new JavaRosaCoreModule().registerModule();
+	            // new CoreModelModule().registerModule();
+	            // replace with direct call to PrototypeManager
+	            PrototypeManager.registerPrototypes(SERIALIABLE_CLASSES);
+	            new XFormsModule().registerModule();
+	            isJavaRosaInitialized = true;
+    		}
+    	}
+    }
 
     private FormLoaderListener mStateListener;
     private String mErrorMsg;
@@ -143,6 +169,8 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         String formHash = FileUtils.getMd5Hash(formXml);
         File formBin = new File(Collect.CACHE_PATH + File.separator + formHash + ".formdef");
 
+        initializeJavaRosa();
+
         if (formBin.exists()) {
             // if we have binary, deserialize binary
             Log.i(
@@ -193,7 +221,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         fec = new FormEntryController(fem);
 
         boolean usedSavepoint = false;
-        
+
         try {
             // import existing data into formdef
             if (mInstancePath != null) {
@@ -225,10 +253,46 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         // set paths to /sdcard/odk/forms/formfilename-media/
         String formFileName = formXml.getName().substring(0, formXml.getName().lastIndexOf("."));
         File formMediaDir = new File( formXml.getParent(), formFileName + "-media");
-        
+
         // Remove previous forms
         ReferenceManager._().clearSession();
 
+        // for itemsets.csv, we only check to see if the itemset file has been
+        // updated
+        File csv = new File(formMediaDir.getAbsolutePath() + "/itemsets.csv");
+        String csvmd5 = null;
+        if (csv.exists()) {
+            csvmd5 = FileUtils.getMd5Hash(csv);
+            boolean readFile = false;
+            ItemsetDbAdapter ida = new ItemsetDbAdapter();
+            ida.open();
+            // get the database entry (if exists) for this itemsets.csv, based
+            // on the path
+            Cursor c = ida.getItemsets(csv.getAbsolutePath());
+            if (c != null) {
+                if (c.getCount() == 1) {
+                    c.moveToFirst(); // should be only one, ever, if any
+                    String oldmd5 = c.getString(c.getColumnIndex("hash"));
+                    if (oldmd5.equals(csvmd5)) {
+                        // they're equal, do nothing
+                    } else {
+                        // the csv has been updated, delete the old entries
+                        ida.dropTable(oldmd5);
+                        // and read the new
+                        readFile = true;
+                    }
+                } else {
+                    // new csv, add it
+                    readFile = true;
+                }
+                c.close();
+            }
+            ida.close();
+            if (readFile) {
+                readCSV(csv, csvmd5);
+            }
+        }
+        
         // This should get moved to the Application Class
         if (ReferenceManager._().getFactories().length == 0) {
             // this is /sdcard/odk
@@ -254,6 +318,9 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         formPath = null;
 
         FormController fc = new FormController(formMediaDir, fec, mInstancePath == null ? null : new File(mInstancePath));
+        if (csvmd5 != null) {
+            fc.setItemsetHash(csvmd5);
+        }
         if ( mXPath != null ) {
         	// we are resuming after having terminated -- set index to this position...
         	FormIndex idx = fc.getIndexFromXPath(mXPath);
@@ -304,26 +371,15 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         }
     }
 
-
     /**
      * Read serialized {@link FormDef} from file and recreate as object.
-     * 
+     *
      * @param formDef serialized FormDef file
      * @return {@link FormDef} object
      */
     public FormDef deserializeFormDef(File formDef) {
 
         // TODO: any way to remove reliance on jrsp?
-
-        // need a list of classes that formdef uses
-    	// unfortunately, the JR registerModule() functions do more than this.
-    	// register just the classes that would have been registered by:
-    	// new JavaRosaCoreModule().registerModule();
-    	// new CoreModelModule().registerModule();
-    	// replace with direct call to PrototypeManager
-    	PrototypeManager.registerPrototypes(SERIALIABLE_CLASSES);
-        new XFormsModule().registerModule();
-        
         FileInputStream fis = null;
         FormDef fd = null;
         try {
@@ -356,7 +412,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
 
     /**
      * Write the FormDef to the file system as a binary blog.
-     * 
+     *
      * @param filepath path to the form file
      */
     public void serializeFormDef(FormDef fd, String filepath) {
@@ -385,13 +441,17 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
     @Override
     protected void onPostExecute(FECWrapper wrapper) {
         synchronized (this) {
-            if (mStateListener != null) {
-                if (wrapper == null) {
-                    mStateListener.loadingError(mErrorMsg);
-                } else {
-                    mStateListener.loadingComplete(this);
-                }
-            }
+        	try {
+	            if (mStateListener != null) {
+	                if (wrapper == null) {
+	                    mStateListener.loadingError(mErrorMsg);
+	                } else {
+	                    mStateListener.loadingComplete(this);
+	                }
+	            }
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        	}
         }
     }
 
@@ -405,7 +465,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
     public FormController getFormController() {
     	return ( data != null ) ? data.getController() : null;
     }
-    
+
     public boolean hasUsedSavepoint() {
     	return (data != null ) ? data.hasUsedSavepoint() : false;
     }
@@ -416,19 +476,19 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
             data = null;
         }
     }
-    
+
     public boolean hasPendingActivityResult() {
     	return pendingActivityResult;
     }
-    
+
     public int getRequestCode() {
     	return requestCode;
     }
-    
+
     public int getResultCode() {
     	return resultCode;
     }
-    
+
     public Intent getIntent() {
     	return intent;
     }
@@ -439,5 +499,44 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
 		this.resultCode = resultCode;
 		this.intent = intent;
 	}
+	
+	private void readCSV(File csv, String formHash) {
+
+        CSVReader reader;
+        ItemsetDbAdapter ida = new ItemsetDbAdapter();
+        ida.open();
+
+        try {
+            reader = new CSVReader(new FileReader(csv));
+
+            String[] nextLine;
+            String[] columnHeaders = null;
+            int lineNumber = 0;
+            while ((nextLine = reader.readNext()) != null) {
+                lineNumber++;
+                if (lineNumber == 1) {
+                    // first line of csv is column headers
+                    columnHeaders = nextLine;
+                    ida.createTable(formHash, columnHeaders,
+                            csv.getAbsolutePath());
+                    continue;
+                }
+                // add the rest of the lines to the specified database
+                // nextLine[] is an array of values from the line
+                // System.out.println(nextLine[4] + "etc...");
+                if (lineNumber == 2) {
+                    // start a transaction for the inserts
+                    ida.beginTransaction();
+                }
+                ida.addRow(formHash, columnHeaders, nextLine);
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            ida.commit();
+            ida.close();
+        }
+    }
 
 }

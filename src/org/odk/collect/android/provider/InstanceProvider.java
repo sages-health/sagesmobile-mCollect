@@ -109,7 +109,11 @@ public class InstanceProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         // must be at the beginning of any activity that can be called from an external intent
-        Collect.createODKDirs();
+        try {
+            Collect.createODKDirs();
+        } catch (RuntimeException e) {
+            return false;
+        }
 
         mDbHelper = new DatabaseHelper(DATABASE_NAME);
         return true;
@@ -223,7 +227,11 @@ public class InstanceProvider extends ContentProvider {
 
     private void deleteAllFilesInDirectory(File directory) {
         if (directory.exists()) {
-            if (directory.isDirectory()) {
+        	// do not delete the directory if it might be an
+        	// ODK Tables instance data directory. Let ODK Tables
+        	// manage the lifetimes of its filled-in form data
+        	// media attachments.
+            if (directory.isDirectory() && !Collect.isODKTablesInstanceDataDirectory(directory)) {
             	// delete any media entries for files in this directory...
                 int images = MediaUtils.deleteImagesInFolderFromMediaProvider(directory);
                 int audio = MediaUtils.deleteAudioInFolderFromMediaProvider(directory);
@@ -260,12 +268,14 @@ public class InstanceProvider extends ContentProvider {
                 Cursor del = null;
                 try {
                 	del = this.query(uri, null, where, whereArgs, null);
-	                del.moveToPosition(-1);
-	                while (del.moveToNext()) {
-	                    String instanceFile = del.getString(del.getColumnIndex(InstanceColumns.INSTANCE_FILE_PATH));
-	                    Collect.getInstance().getActivityLogger().logAction(this, "delete", instanceFile);
-	                    File instanceDir = (new File(instanceFile)).getParentFile();
-	                    deleteAllFilesInDirectory(instanceDir);
+                	if (del.getCount() > 0) {
+                		del.moveToFirst();
+                		do {
+		                    String instanceFile = del.getString(del.getColumnIndex(InstanceColumns.INSTANCE_FILE_PATH));
+		                    Collect.getInstance().getActivityLogger().logAction(this, "delete", instanceFile);
+		                    File instanceDir = (new File(instanceFile)).getParentFile();
+		                    deleteAllFilesInDirectory(instanceDir);
+                		} while (del.moveToNext());
 	                }
                 } finally {
                 	if ( del != null ) {
@@ -281,13 +291,14 @@ public class InstanceProvider extends ContentProvider {
                 Cursor c = null;
                 try {
                 	c = this.query(uri, null, where, whereArgs, null);
-	                // This should only ever return 1 record.  I hope.
-	                c.moveToPosition(-1);
-	                while (c.moveToNext()) {
-	                    String instanceFile = c.getString(c.getColumnIndex(InstanceColumns.INSTANCE_FILE_PATH));
-	                    Collect.getInstance().getActivityLogger().logAction(this, "delete", instanceFile);
-	                    File instanceDir = (new File(instanceFile)).getParentFile();
-	                    deleteAllFilesInDirectory(instanceDir);
+                	if (c.getCount() > 0) {
+                		c.moveToFirst();
+                		do {
+		                    String instanceFile = c.getString(c.getColumnIndex(InstanceColumns.INSTANCE_FILE_PATH));
+		                    Collect.getInstance().getActivityLogger().logAction(this, "delete", instanceFile);
+		                    File instanceDir = (new File(instanceFile)).getParentFile();
+		                    deleteAllFilesInDirectory(instanceDir);
+                		} while (c.moveToNext());
 	                }
                 } finally {
                 	if ( c != null ) {
@@ -314,6 +325,14 @@ public class InstanceProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        Long now = Long.valueOf(System.currentTimeMillis());
+
+        // Make sure that the fields are all set
+        if (values.containsKey(InstanceColumns.LAST_STATUS_CHANGE_DATE) == false) {
+            values.put(InstanceColumns.LAST_STATUS_CHANGE_DATE, now);
+        }
+
         int count;
         String status = null;
         switch (sUriMatcher.match(uri)) {

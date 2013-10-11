@@ -25,6 +25,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.http.HttpStatus;
 import org.kxml2.io.KXmlParser;
@@ -83,6 +84,9 @@ public final class WebUtils {
 
 	public static final String HTTP_CONTENT_TYPE_TEXT_XML = "text/xml";
 	public static final int CONNECTION_TIMEOUT = 30000;
+
+	public static final String ACCEPT_ENCODING_HEADER = "Accept-Encoding";
+	public static final String GZIP_CONTENT_ENCODING = "gzip";
 
 	private static ClientConnectionManager httpConnectionManager = null;
 
@@ -322,6 +326,10 @@ public final class WebUtils {
 					+ ("while accessing") + urlString, 0);
 		}
 
+		if (u.getHost() == null ) {
+			return new DocumentFetchResult("Invalid server URL (no hostname): " + urlString, 0);
+		}
+
 		// if https then enable preemptive basic auth...
 		if (u.getScheme().equals("https")) {
 			enablePreemptiveBasicAuth(localContext, u.getHost());
@@ -329,6 +337,7 @@ public final class WebUtils {
 
 		// set up request...
 		HttpGet req = WebUtils.createOpenRosaHttpGet(u);
+		req.addHeader(WebUtils.ACCEPT_ENCODING_HEADER, WebUtils.GZIP_CONTENT_ENCODING);
 
 		HttpResponse response = null;
 		try {
@@ -374,6 +383,10 @@ public final class WebUtils {
 				InputStreamReader isr = null;
 				try {
 					is = entity.getContent();
+	                Header contentEncoding = entity.getContentEncoding();
+	                if ( contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase(WebUtils.GZIP_CONTENT_ENCODING) ) {
+	                	is = new GZIPInputStream(is);
+	                }
 					isr = new InputStreamReader(is, "UTF-8");
 					doc = new Document();
 					KXmlParser parser = new KXmlParser();
@@ -441,13 +454,7 @@ public final class WebUtils {
 			}
 			return new DocumentFetchResult(doc, isOR);
 		} catch (Exception e) {
-			// If we get an unexpected exception, the safest thing is to close
-			// all connections
-			// so that if there is garbage on the connection we ensure it is
-			// removed. This
-			// is especially important if the connection times out.
-			httpConnectionManager.shutdown();
-			httpConnectionManager = null;
+			clearHttpConnectionManager();
 			e.printStackTrace();
 			String cause;
 			Throwable c = e;
@@ -460,6 +467,18 @@ public final class WebUtils {
 
 			Log.w(t, error);
 			return new DocumentFetchResult(error, 0);
+		}
+	}
+
+	public static void clearHttpConnectionManager() {
+		// If we get an unexpected exception, the safest thing is to close
+		// all connections
+		// so that if there is garbage on the connection we ensure it is
+		// removed. This
+		// is especially important if the connection times out.
+		if ( httpConnectionManager != null ) {
+			httpConnectionManager.shutdown();
+			httpConnectionManager = null;
 		}
 	}
 }

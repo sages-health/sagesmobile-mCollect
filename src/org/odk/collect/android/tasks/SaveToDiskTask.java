@@ -14,8 +14,9 @@
 
 package org.odk.collect.android.tasks;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -87,6 +88,13 @@ public class SaveToDiskTask extends AsyncTask<Void, String, Integer> {
         }
 
     	Collect.getInstance().getActivityLogger().logInstanceAction(this, "save", Boolean.toString(mMarkCompleted));
+
+    	// if there is a meta/instanceName field, be sure we are using the latest value
+    	// just in case the validate somehow triggered an update.
+    	String updatedSaveName = formController.getSubmissionMetadata().instanceName;
+    	if ( updatedSaveName != null ) {
+    		mInstanceName = updatedSaveName;
+    	}
 
     	boolean saveOutcome = exportData(mMarkCompleted);
 
@@ -360,36 +368,40 @@ public class SaveToDiskTask extends AsyncTask<Void, String, Integer> {
     private static boolean exportXmlFile(ByteArrayPayload payload, String path) {
         // create data stream
         InputStream is = payload.getPayloadStream();
-        int len = (int) payload.getLength();
 
-        // read from data stream
-        byte[] data = new byte[len];
+        FileOutputStream fout = null;
+        byte[] buffer = new byte[2048];
         try {
-            int read = is.read(data, 0, len);
-            if (read > 0) {
-                // write xml file
-                try {
-                    // String filename = path + File.separator +
-                    // path.substring(path.lastIndexOf(File.separator) + 1) + ".xml";
-                	FileWriter fw = new FileWriter(path);
-                	fw.write(new String(data, "UTF-8"));
-                	fw.flush();
-                	fw.close();
-                    return true;
+            fout = new FileOutputStream(path);
+            BufferedOutputStream out = new BufferedOutputStream(fout);
 
-                } catch (IOException e) {
-                    Log.e(t, "Error writing XML file");
-                    e.printStackTrace();
-                    return false;
-                }
+            // read from data stream
+            int len = is.read(buffer);
+            while ( len != -1 ) {
+                out.write(buffer, 0, len);
+                len = is.read(buffer);
             }
+
+            out.flush();
+            fout.getChannel().force(false);
+            out.close();
+            fout = null;
+
+            return true;
+
         } catch (IOException e) {
-            Log.e(t, "Error reading from payload data stream");
+            Log.e(t, "Error reading from payload data stream or writing to storage " + e.toString());
             e.printStackTrace();
             return false;
+        } finally {
+            if ( fout != null ) {
+                try {
+                    fout.close();
+                } catch (IOException e) {
+                    // ignored
+                }
+            }
         }
-
-        return false;
     }
 
 

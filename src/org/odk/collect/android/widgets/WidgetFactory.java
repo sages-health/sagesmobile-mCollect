@@ -77,9 +77,14 @@ public class WidgetFactory {
                         questionWidget = new BarcodeWidget(context, fep);
                         break;
                     case Constants.DATATYPE_TEXT:
-                    	if (appearance.startsWith("ex:")) {
+                    	String query = fep.getQuestion().getAdditionalAttribute(null, "query");
+                        if (query != null) {
+                            questionWidget = new ItemsetWidget(context, fep);
+                        } else if (appearance.startsWith("printer")) {
+                            questionWidget = new ExPrinterWidget(context, fep);
+                        } else if (appearance.startsWith("ex:")) {
                             questionWidget = new ExStringWidget(context, fep);
-                    	} else if (appearance.equals("numbers")) {
+                        } else if (appearance.equals("numbers")) {
                             questionWidget = new StringNumberWidget(context, fep);
                         } else {
                             questionWidget = new StringWidget(context, fep);
@@ -99,6 +104,8 @@ public class WidgetFactory {
             		questionWidget = new AnnotateWidget(context, fep);
             	} else if(appearance.equals("draw")) {
             		questionWidget = new DrawWidget(context, fep);
+            	} else if(appearance.startsWith("align:")) {
+            		questionWidget = new AlignedImageWidget(context, fep);
             	} else {
             		questionWidget = new ImageWidget(context, fep);
             	}
@@ -144,10 +151,10 @@ public class WidgetFactory {
                 // }
                 else if (appearance.equals("quick")) {
                     questionWidget = new SelectOneAutoAdvanceWidget(context, fep);
-                } else if (appearance.equals("list")) {
-                    questionWidget = new ListWidget(context, fep, true);
                 } else if (appearance.equals("list-nolabel")) {
                     questionWidget = new ListWidget(context, fep, false);
+                } else if (appearance.equals("list")) {
+                    questionWidget = new ListWidget(context, fep, true);
                 } else if (appearance.equals("label")) {
                     questionWidget = new LabelWidget(context, fep);
                 } else {

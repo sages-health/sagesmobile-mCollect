@@ -286,4 +286,29 @@
 <string name="delimiter">Delimiter</string>
 <string name="sum_delimiter">Delimiter to separate values</string>
 <string name="default_delimiter"> </string>
+  <string
+    name="open_url"
+  >
+    Open Url
+  </string>
+  <string
+    name="get_bearing"
+  >
+    Record Bearing
+  </string>
+  <string
+    name="replace_bearing"
+  >
+    Replace Bearing
+  </string>
+  <string
+    name="getting_bearing"
+  >
+    Loading Bearing
+  </string>
+  <string
+    name="accept_bearing"
+  >
+    Record Bearing
+  </string>
 </resources>

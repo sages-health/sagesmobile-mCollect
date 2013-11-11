@@ -128,10 +128,12 @@ public class MainMenuActivity extends Activity {
 		{
 			// dynamically construct the "ODK Collect vA.B" string
 			TextView mainMenuMessageLabel = (TextView) findViewById(R.id.main_menu_header);
-            mainMenuMessageLabel.setText(Collect.getInstance().getVersionedAppName());
+            mainMenuMessageLabel.setText(Collect.getInstance()
+                        .getVersionedAppName());
 		}
 
-        setTitle(getString(R.string.app_name) + " > " + getString(R.string.main_menu));
+        setTitle(getString(R.string.app_name) + " > "
+                        + getString(R.string.main_menu));
 
 		mReviewSpacer = findViewById(R.id.review_spacer);
 		mGetFormsSpacer = findViewById(R.id.get_forms_spacer);
@@ -647,4 +649,5 @@ public class MainMenuActivity extends Activity {
 		}
 		return res;
 	}
+
 }

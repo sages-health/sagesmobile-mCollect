@@ -49,49 +49,49 @@
             <Button
                 android:id="@+id/enter_data"
                 style="@style/sagesButtonStyle"
-                android:drawableLeft="@drawable/ic_action_new_form"
+                android:drawableLeft="@drawable/ic_action_fill"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/review_data"
                 style="@style/sagesButtonStyle"
-                android:drawableLeft="@drawable/ic_action_edit_form"
+                android:drawableLeft="@drawable/ic_action_edit"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/send_data"
                 style="@style/sagesButtonStyle"
-                android:drawableLeft="@drawable/ic_action_send_form"
+                android:drawableLeft="@drawable/ic_action_send"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/send_data_sms"
                 style="@style/sagesButtonStyle"
-                android:drawableLeft="@drawable/ic_action_sms_form"
+                android:drawableLeft="@drawable/ic_action_sms"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/get_forms"
                 style="@style/sagesButtonStyle"
-                android:drawableLeft="@drawable/ic_action_blank_form"
+                android:drawableLeft="@drawable/ic_action_get"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/manage_forms"
                 style="@style/sagesButtonStyle"
-                android:drawableLeft="@drawable/ic_action_delete_form"
+                android:drawableLeft="@drawable/ic_action_delete"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/review_forms"
                 style="@style/sagesButtonStyle"
-                android:drawableLeft="@drawable/ic_action_review_forms"
+                android:drawableLeft="@drawable/ic_action_review"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>

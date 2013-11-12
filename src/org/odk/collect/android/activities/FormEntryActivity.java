@@ -2520,7 +2520,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			// OR left/right of > .5"
 			DisplayMetrics dm = new DisplayMetrics();
 			getWindowManager().getDefaultDisplay().getMetrics(dm);
-			int xPixelLimit = (int) (dm.xdpi * .25);
+//			int xPixelLimit = (int) (dm.xdpi * .25);
+			int xPixelLimit = (int) (dm.xdpi * .5);  // CHANGED TO HALF INCH FOR HORIZONTAL SWIPE
 			int yPixelLimit = (int) (dm.ydpi * .25);
 
 			if (mCurrentView instanceof ODKView) {
@@ -2535,8 +2536,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 
 			if ((Math.abs(e1.getX() - e2.getX()) > xPixelLimit && Math.abs(e1
-					.getY() - e2.getY()) < yPixelLimit)
-					|| Math.abs(e1.getX() - e2.getX()) > xPixelLimit * 2) {
+					.getY() - e2.getY()) < yPixelLimit)) { // GOT RID OF "half inch = page swap no matter what" 
+//					|| Math.abs(e1.getX() - e2.getX()) > xPixelLimit * 2) { 
 				mBeenSwiped = true;
 				if (velocityX > 0) {
 					if (e1.getX() > e2.getX()) {

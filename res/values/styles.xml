@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <style name="sagesButtonStyle" parent="android:Widget.Holo.Light.Button">
+        <item name="android:background">@drawable/button_gradient</item>
+        <item name="android:padding">20dp</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">21sp</item>
+    </style>
+</resources>

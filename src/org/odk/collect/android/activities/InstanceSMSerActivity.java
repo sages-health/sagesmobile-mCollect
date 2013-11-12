@@ -84,7 +84,7 @@ public class InstanceSMSerActivity extends Activity implements InstanceSMSerList
 
         mUploadedInstances = new HashMap<String, String>();
 
-        setTitle(getString(R.string.app_name) + " > " + getString(R.string.send_data));
+//        setTitle(getString(R.string.app_name) + " > " + getString(R.string.send_data));
 
         // get instances to upload
         Intent intent = getIntent();

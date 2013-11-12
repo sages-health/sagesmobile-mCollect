@@ -91,7 +91,7 @@ public class PreferencesSmsActivity extends PreferenceActivity implements
          * http://www.kaloer.com/android-preferences
          */
         
-        setTitle(getString(R.string.app_name) + " > " + getString(R.string.general_preferences));
+//        setTitle(getString(R.string.app_name) + " > " + getString(R.string.general_preferences));
         updateGsmServerNum();
         updateDelimiter();
         updateTickSymbol();

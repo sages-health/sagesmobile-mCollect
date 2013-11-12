@@ -90,9 +90,6 @@ public class MainMenuActivity extends Activity {
 	private Button mReviewDataButton;
 	private Button mGetFormsButton;
 
-	private View mReviewSpacer;
-	private View mGetFormsSpacer;
-
 	private AlertDialog mAlertDialog;
 	private SharedPreferences mAdminPreferences;
 
@@ -132,11 +129,8 @@ public class MainMenuActivity extends Activity {
                         .getVersionedAppName());
 		}
 
-        setTitle(getString(R.string.app_name) + " > "
-                        + getString(R.string.main_menu));
-
-		mReviewSpacer = findViewById(R.id.review_spacer);
-		mGetFormsSpacer = findViewById(R.id.get_forms_spacer);
+//        setTitle(getString(R.string.app_name) + " > "
+//                        + getString(R.string.main_menu));
 
 		mAdminPreferences = this.getSharedPreferences(
 				AdminPreferencesActivity.ADMIN_PREFERENCES, 0);
@@ -326,10 +320,8 @@ public class MainMenuActivity extends Activity {
 				AdminPreferencesActivity.KEY_EDIT_SAVED, true);
 		if (!edit) {
 			mReviewDataButton.setVisibility(View.GONE);
-			mReviewSpacer.setVisibility(View.GONE);
 		} else {
 			mReviewDataButton.setVisibility(View.VISIBLE);
-			mReviewSpacer.setVisibility(View.VISIBLE);
 		}
 
 		boolean send = sharedPreferences.getBoolean(
@@ -344,10 +336,8 @@ public class MainMenuActivity extends Activity {
 				AdminPreferencesActivity.KEY_GET_BLANK, true);
 		if (!get_blank) {
 			mGetFormsButton.setVisibility(View.GONE);
-			mGetFormsSpacer.setVisibility(View.GONE);
 		} else {
 			mGetFormsButton.setVisibility(View.VISIBLE);
-			mGetFormsSpacer.setVisibility(View.VISIBLE);
 		}
 
 		boolean delete_saved = sharedPreferences.getBoolean(

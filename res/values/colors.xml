@@ -18,5 +18,6 @@ the License.
 
     <drawable name="white">#ffffffff</drawable>
     <drawable name="black">#ff000000</drawable>
+    <color name="orange">#ffEA532E</color>
 
 </resources>

@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import javax.crypto.NoSuchPaddingException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -109,6 +110,7 @@ public class MainMenuActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
 		// must be at the beginning of any activity that can be called from an
 		// external intent

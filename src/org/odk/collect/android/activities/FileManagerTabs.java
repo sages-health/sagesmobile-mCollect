@@ -43,6 +43,7 @@ public class FileManagerTabs extends TabActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
 //		setTitle(getString(R.string.app_name) + " > "
 //				+ getString(R.string.manage_files));

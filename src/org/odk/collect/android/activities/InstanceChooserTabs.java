@@ -44,6 +44,7 @@ public class InstanceChooserTabs extends TabActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 //        setTitle(getString(R.string.app_name) + " > " + getString(R.string.review_data));
 
         // create tab host and tweak color

@@ -44,6 +44,7 @@ public class AndroidShortcuts extends Activity {
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        Util.forceOverflowMenu(this);
 
         final Intent intent = getIntent();
         final String action = intent.getAction();

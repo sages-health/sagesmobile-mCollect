@@ -208,6 +208,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
 		// must be at the beginning of any activity that can be called from an
 		// external intent

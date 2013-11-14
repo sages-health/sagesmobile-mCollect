@@ -56,6 +56,7 @@ public class FormChooserList extends ListActivity implements DiskSyncListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
         // must be at the beginning of any activity that can be called from an external intent
         try {

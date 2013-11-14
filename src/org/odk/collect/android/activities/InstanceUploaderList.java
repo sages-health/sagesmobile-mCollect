@@ -99,6 +99,7 @@ public class InstanceUploaderList extends ListActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 		setContentView(R.layout.instance_uploader_list);
 
 		// set up long click listener

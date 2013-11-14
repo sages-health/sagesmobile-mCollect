@@ -89,6 +89,7 @@ public class DrawActivity extends Activity {
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
+        Util.forceOverflowMenu(this);
 		try {
 			saveFile(savepointImage);
 		} catch (FileNotFoundException e) {

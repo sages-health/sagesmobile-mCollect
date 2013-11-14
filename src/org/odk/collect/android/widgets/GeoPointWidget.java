@@ -23,7 +23,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.activities.GeoPointActivity;
 import org.odk.collect.android.activities.GeoPointMapActivity;
-import org.odk.collect.android.activities.GeoPointMapActivitySdk7;
+//import org.odk.collect.android.activities.GeoPointMapActivitySdk7;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.CompatibilityUtils;
 
@@ -144,11 +144,11 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 								mPrompt.getIndex());
 
 				Intent i;
-				if (mUseMapsV2 ) {
+//				if (mUseMapsV2 ) {
 					i = new Intent(getContext(), GeoPointMapActivity.class);
-				} else {
-					i = new Intent(getContext(), GeoPointMapActivitySdk7.class);
-				}
+//				} else {
+//					i = new Intent(getContext(), GeoPointMapActivitySdk7.class);
+//				}
 
 				String s = mStringAnswer.getText().toString();
 				if ( s.length() != 0 ) {
@@ -184,13 +184,13 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 						.logInstanceAction(this, "recordLocation", "click",
 								mPrompt.getIndex());
 				Intent i = null;
-				if ( mUseMapsV2 ) {
+//				if ( mUseMapsV2 ) {
 					i = new Intent(getContext(), GeoPointMapActivity.class);
-				} else if (mUseMaps) {
-					i = new Intent(getContext(), GeoPointMapActivitySdk7.class);
-				} else {
-					i = new Intent(getContext(), GeoPointActivity.class);
-				}
+//				} else if (mUseMaps) {
+//					i = new Intent(getContext(), GeoPointMapActivitySdk7.class);
+//				} else {
+//					i = new Intent(getContext(), GeoPointActivity.class);
+//				}
 
 				String s = mStringAnswer.getText().toString();
 				if ( s.length() != 0 ) {

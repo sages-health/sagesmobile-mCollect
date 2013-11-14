@@ -50,6 +50,7 @@ public class GeoPointActivity extends Activity implements LocationListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
         if ( savedInstanceState != null ) {
         	mLocationCount = savedInstanceState.getInt(LOCATION_COUNT);

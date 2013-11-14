@@ -31,7 +31,7 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="16" />
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="18" />
     <uses-permission 
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		android:name="android.permission.RECEIVE_SMS" />

@@ -60,6 +60,7 @@ public class FormHierarchyActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
         setContentView(R.layout.hierarchy_layout);
 
         FormController formController = Collect.getInstance().getFormController();

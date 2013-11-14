@@ -79,6 +79,7 @@ public class InstanceSMSerActivity extends Activity implements InstanceSMSerList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
         mAlertMsg = getString(R.string.please_wait);
 

@@ -25,6 +25,7 @@ import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.MediaUtils;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -69,8 +70,8 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 
 	private TextView mErrorTextView;
 
-	public AnnotateWidget(Context context, FormEntryPrompt prompt) {
-		super(context, prompt);
+	public AnnotateWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+		super(context, prompt, onAnswerChangedListener);
 
 		mInstanceFolder = Collect.getInstance().getFormController()
 				.getInstancePath().getParent();
@@ -306,7 +307,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 	}
 
 	@Override
-	public IAnswerData getAnswer() {
+	public IAnswerData getAnswer(boolean clearFocus) {
 		if (mBinaryName != null) {
 			return new StringData(mBinaryName.toString());
 		} else {
@@ -344,6 +345,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 		}
 
 		Collect.getInstance().getFormController().setIndexWaitingForData(null);
+		answerChanged();
 	}
 
 	@Override

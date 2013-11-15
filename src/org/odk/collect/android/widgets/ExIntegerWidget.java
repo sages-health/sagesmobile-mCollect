@@ -19,6 +19,7 @@ import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -56,8 +57,8 @@ public class ExIntegerWidget extends ExStringWidget {
         return d;
 	}
 
-    public ExIntegerWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public ExIntegerWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         mAnswer.setInputType(InputType.TYPE_NUMBER_FLAG_SIGNED);
 
@@ -88,7 +89,7 @@ public class ExIntegerWidget extends ExStringWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         String s = mAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;
@@ -109,6 +110,7 @@ public class ExIntegerWidget extends ExStringWidget {
     public void setBinaryData(Object answer) {
     	mAnswer.setText( answer == null ? null : ((Integer) answer).toString());
     	Collect.getInstance().getFormController().setIndexWaitingForData(null);
+    	answerChanged();
     }
 
 }

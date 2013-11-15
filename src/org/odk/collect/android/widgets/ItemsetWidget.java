@@ -31,6 +31,7 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.database.ItemsetDbAdapter;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -58,13 +59,13 @@ public class ItemsetWidget extends QuestionWidget implements
     // Hashmap linking label:value
     private HashMap<String, String> mAnswers;
 
-    public ItemsetWidget(Context context, FormEntryPrompt prompt) {
-        this(context, prompt, true);
+    public ItemsetWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        this(context, prompt, true, onAnswerChangedListener);
     }
 
     protected ItemsetWidget(Context context, FormEntryPrompt prompt,
-            boolean derived) {
-        super(context, prompt);
+            boolean derived, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         mButtons = new RadioGroup(context);
         mButtons.setId(QuestionWidget.newUniqueId());
         mReadOnly = prompt.isReadOnly();
@@ -259,7 +260,7 @@ public class ItemsetWidget extends QuestionWidget implements
     }
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         if (mAnswer == null) {
             return null;
         } else {
@@ -304,6 +305,7 @@ public class ItemsetWidget extends QuestionWidget implements
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (isChecked) {
             mAnswer = mAnswers.get((String) buttonView.getText());
+            answerChanged();
         }
     }
 

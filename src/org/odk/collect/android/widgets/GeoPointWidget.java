@@ -26,6 +26,7 @@ import org.odk.collect.android.activities.GeoPointMapActivity;
 //import org.odk.collect.android.activities.GeoPointMapActivitySdk7;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.CompatibilityUtils;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.Context;
@@ -63,8 +64,8 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 	private String mAppearance;
 	private double mAccuracyThreshold;
 
-	public GeoPointWidget(Context context, FormEntryPrompt prompt) {
-		super(context, prompt);
+	public GeoPointWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+		super(context, prompt, onAnswerChangedListener);
 
 		// Determine the activity threshold to use
 		String acc = prompt.getQuestion().getAdditionalAttribute(null, ACCURACY_THRESHOLD);
@@ -272,7 +273,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 	}
 
 	@Override
-	public IAnswerData getAnswer() {
+	public IAnswerData getAnswer(boolean clearFocus) {
 		String s = mStringAnswer.getText().toString();
 		if (s == null || s.equals("")) {
 			return null;
@@ -350,6 +351,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 				+ truncateDouble(sa[3]) + "m");
 		Collect.getInstance().getFormController().setIndexWaitingForData(null);
 		updateButtonLabelsAndVisibility(true);
+		answerChanged();
 	}
 
 	@Override

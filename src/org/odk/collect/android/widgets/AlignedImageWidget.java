@@ -81,8 +81,8 @@ public class AlignedImageWidget extends QuestionWidget implements IBinaryWidget 
 
     private int iArray[] = new int[6];
 
-    public AlignedImageWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public AlignedImageWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         String appearance = prompt.getAppearanceHint();
         String alignments = appearance.substring(appearance.indexOf(":") + 1);
@@ -281,7 +281,7 @@ public class AlignedImageWidget extends QuestionWidget implements IBinaryWidget 
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         if (mBinaryName != null) {
             return new StringData(mBinaryName.toString());
         } else {
@@ -320,6 +320,7 @@ public class AlignedImageWidget extends QuestionWidget implements IBinaryWidget 
         }
 
     	Collect.getInstance().getFormController().setIndexWaitingForData(null);
+    	answerChanged();
     }
 
     @Override

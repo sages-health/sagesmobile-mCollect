@@ -19,6 +19,7 @@ import org.javarosa.core.model.data.StringData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.content.Intent;
@@ -42,8 +43,8 @@ public class UrlWidget extends QuestionWidget {
     private Button mOpenUrlButton;
     private TextView mStringAnswer;
 
-    public UrlWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public UrlWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         setOrientation(LinearLayout.VERTICAL);
 
         TableLayout.LayoutParams params = new TableLayout.LayoutParams();
@@ -75,6 +76,7 @@ public class UrlWidget extends QuestionWidget {
                 } else {
                     Toast.makeText(getContext(), "No URL set", Toast.LENGTH_SHORT).show();
                 }
+                answerChanged();
             }
         });
 
@@ -99,7 +101,7 @@ public class UrlWidget extends QuestionWidget {
     }
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         String s = mStringAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;

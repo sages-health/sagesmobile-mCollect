@@ -20,6 +20,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -44,8 +45,8 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 	private Button mGetBarcodeButton;
 	private TextView mStringAnswer;
 
-	public BarcodeWidget(Context context, FormEntryPrompt prompt) {
-		super(context, prompt);
+	public BarcodeWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+		super(context, prompt, onAnswerChangedListener);
 		setOrientation(LinearLayout.VERTICAL);
 
 		TableLayout.LayoutParams params = new TableLayout.LayoutParams();
@@ -111,7 +112,7 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 	}
 
 	@Override
-	public IAnswerData getAnswer() {
+	public IAnswerData getAnswer(boolean clearFocus) {
 		String s = mStringAnswer.getText().toString();
 		if (s == null || s.equals("")) {
 			return null;
@@ -127,6 +128,7 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 	public void setBinaryData(Object answer) {
 		mStringAnswer.setText((String) answer);
 		Collect.getInstance().getFormController().setIndexWaitingForData(null);
+		answerChanged();
 	}
 
 	@Override

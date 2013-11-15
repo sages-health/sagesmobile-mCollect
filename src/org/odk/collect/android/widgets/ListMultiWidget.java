@@ -29,6 +29,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.FileUtils;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -74,8 +75,8 @@ public class ListMultiWidget extends QuestionWidget {
 
 
     @SuppressWarnings("unchecked")
-    public ListMultiWidget(Context context, FormEntryPrompt prompt, boolean displayLabel) {
-        super(context, prompt);
+    public ListMultiWidget(Context context, FormEntryPrompt prompt, boolean displayLabel, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         mItems = prompt.getSelectChoices();
         mCheckboxes = new ArrayList<CheckBox>();
@@ -120,6 +121,7 @@ public class ListMultiWidget extends QuestionWidget {
                                	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.select", 
                             			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
                             }
+                            answerChanged();
                         }
                     }
                 });
@@ -277,7 +279,7 @@ public class ListMultiWidget extends QuestionWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         Vector<Selection> vc = new Vector<Selection>();
         for (int i = 0; i < mCheckboxes.size(); i++) {
         	CheckBox c = mCheckboxes.get(i);

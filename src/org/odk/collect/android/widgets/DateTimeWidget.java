@@ -19,6 +19,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.joda.time.DateTime;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -53,8 +54,8 @@ public class DateTimeWidget extends QuestionWidget {
     private boolean showCalendar = false;
 	private HorizontalScrollView scrollView = null;
 
-    public DateTimeWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public DateTimeWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         mDatePicker = new DatePicker(getContext());
         mDatePicker.setId(QuestionWidget.newUniqueId());
@@ -234,6 +235,7 @@ public class DateTimeWidget extends QuestionWidget {
             // create time widget with current time as of right now
             clearAnswer();
         }
+        answerChanged();
     }
 
 
@@ -251,11 +253,12 @@ public class DateTimeWidget extends QuestionWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
-    	if ( showCalendar ) {
+    public IAnswerData getAnswer(boolean clearFocus) {
+    	if ( showCalendar && clearFocus ) {
     		scrollView.clearChildFocus(mDatePicker);
     	}
-    	clearFocus();
+    	if (clearFocus)
+    		clearFocus();
         DateTime ldt =
             new DateTime(mDatePicker.getYear(), mDatePicker.getMonth() + 1,
                     mDatePicker.getDayOfMonth(), mTimePicker.getCurrentHour(),

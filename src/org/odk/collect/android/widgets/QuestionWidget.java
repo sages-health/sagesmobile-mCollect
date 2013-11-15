@@ -37,8 +37,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public abstract class QuestionWidget extends LinearLayout {
+	public interface OnAnswerChangedListener {
+		void onAnswerChanged(QuestionWidget questionWidget);
+	}
+	private OnAnswerChangedListener onAnswerChangedListener;
+    protected void answerChanged() {
+    	if (onAnswerChangedListener != null)
+    		onAnswerChangedListener.onAnswerChanged(this);
+    }
 
-    @SuppressWarnings("unused")
+	@SuppressWarnings("unused")
     private final static String t = "QuestionWidget";
 
 	private static int idGenerator = 1211322;
@@ -64,8 +72,9 @@ public abstract class QuestionWidget extends LinearLayout {
     private TextView mHelpText;
 
 
-    public QuestionWidget(Context context, FormEntryPrompt p) {
+    public QuestionWidget(Context context, FormEntryPrompt p, OnAnswerChangedListener onAnswerChangedListener) {
         super(context);
+		this.onAnswerChangedListener = onAnswerChangedListener;
 
         mQuestionFontsize = Collect.getQuestionFontsize();
         mAnswerFontsize = mQuestionFontsize + 2;
@@ -133,7 +142,7 @@ public abstract class QuestionWidget extends LinearLayout {
     }
 
     // Abstract methods
-    public abstract IAnswerData getAnswer();
+    public abstract IAnswerData getAnswer(boolean clearFocus);
 
 
     public abstract void clearAnswer();

@@ -17,14 +17,25 @@ the License.
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent"
+  android:background="#EEEEEE"
   android:id="@+id/rl" >
+
+    <TextView
+     	android:id="@+id/breadcrumbs"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="#FF00708A"
+        android:textColor="#FFFFFFFF"
+        android:textSize="16sp"
+        android:layout_marginBottom="5dp" />
 
     <LinearLayout
      android:id="@+id/questionholder"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/breadcrumbs"
         android:layout_above="@+id/buttonholder">
         </LinearLayout>
 

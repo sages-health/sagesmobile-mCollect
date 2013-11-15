@@ -25,6 +25,7 @@ import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.utilities.FileUtils;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -63,7 +64,7 @@ public class LabelWidget extends QuestionWidget {
 
 
     public LabelWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+        super(context, prompt, null);
 
         mItems = prompt.getSelectChoices();
         mPrompt = prompt;
@@ -204,7 +205,7 @@ public class LabelWidget extends QuestionWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         return null;
     }
 

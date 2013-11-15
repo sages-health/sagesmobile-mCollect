@@ -20,6 +20,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -88,8 +89,8 @@ public class ExStringWidget extends QuestionWidget implements IBinaryWidget {
 
     protected EditText mAnswer;
 
-    public ExStringWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public ExStringWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         TableLayout.LayoutParams params = new TableLayout.LayoutParams();
         params.setMargins(7, 5, 7, 5);
@@ -188,7 +189,7 @@ public class ExStringWidget extends QuestionWidget implements IBinaryWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         String s = mAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;
@@ -205,6 +206,7 @@ public class ExStringWidget extends QuestionWidget implements IBinaryWidget {
     public void setBinaryData(Object answer) {
     	mAnswer.setText((String) answer);
     	Collect.getInstance().getFormController().setIndexWaitingForData(null);
+    	answerChanged();
     }
 
     @Override

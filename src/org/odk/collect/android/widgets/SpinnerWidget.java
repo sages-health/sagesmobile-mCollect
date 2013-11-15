@@ -23,6 +23,7 @@ import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -52,8 +53,8 @@ public class SpinnerWidget extends QuestionWidget {
     private static final int BROWN = 0xFF936931;
 
 
-    public SpinnerWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public SpinnerWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         mItems = prompt.getSelectChoices();
         spinner = new Spinner(context);
@@ -101,6 +102,7 @@ public class SpinnerWidget extends QuestionWidget {
 					Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged", 
 			    			mItems.get(position).getValue(), mPrompt.getIndex());
 				}
+				answerChanged();
 			}
 
 			@Override
@@ -114,8 +116,9 @@ public class SpinnerWidget extends QuestionWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
-    	clearFocus();
+    public IAnswerData getAnswer(boolean clearFocus) {
+    	if (clearFocus)
+    		clearFocus();
         int i = spinner.getSelectedItemPosition();
         if (i == -1 || i == mItems.size()) {
             return null;

@@ -345,7 +345,7 @@ public class GridWidget extends QuestionWidget {
             selected[i] = false;
             imageViews[i].setBackgroundColor(Color.WHITE);
         }
-
+        answerChanged();
     }
 
 

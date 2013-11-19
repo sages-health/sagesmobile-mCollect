@@ -249,6 +249,7 @@ public class ListWidget extends QuestionWidget implements OnCheckedChangeListene
         for (RadioButton button : this.buttons) {
             if (button.isChecked()) {
                 button.setChecked(false);
+                answerChanged();
                 return;
             }
         }

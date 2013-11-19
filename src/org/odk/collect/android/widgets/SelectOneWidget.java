@@ -123,6 +123,7 @@ public class SelectOneWidget extends QuestionWidget implements
 		for (RadioButton button : this.buttons) {
 			if (button.isChecked()) {
 				button.setChecked(false);
+				answerChanged();
 				return;
 			}
 		}

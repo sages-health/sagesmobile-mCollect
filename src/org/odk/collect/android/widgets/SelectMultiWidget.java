@@ -143,6 +143,7 @@ public class SelectMultiWidget extends QuestionWidget {
     			c.setChecked(false);
     		}
     	}
+        answerChanged();
     }
 
 

@@ -194,6 +194,7 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
 
         // reset buttons
         mSignButton.setText(getContext().getString(R.string.sign_button));
+        answerChanged();
 	}
 
 	

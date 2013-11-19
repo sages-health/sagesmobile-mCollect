@@ -195,6 +195,7 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 
 		// reset buttons
 		mDrawButton.setText(getContext().getString(R.string.draw_image));
+        answerChanged();
 	}
 
 	@Override

@@ -304,6 +304,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 
 		// reset buttons
 		mCaptureButton.setText(getContext().getString(R.string.capture_image));
+        answerChanged();
 	}
 
 	@Override

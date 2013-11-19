@@ -210,6 +210,7 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
 
     @Override
     public void clearAnswer() {
+        // nothing to clear
     }
 
 

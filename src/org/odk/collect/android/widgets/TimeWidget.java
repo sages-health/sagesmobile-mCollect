@@ -91,6 +91,7 @@ public class TimeWidget extends QuestionWidget {
         DateTime ldt = new DateTime();
         mTimePicker.setCurrentHour(ldt.getHourOfDay());
         mTimePicker.setCurrentMinute(ldt.getMinuteOfHour());
+        answerChanged();
     }
 
 

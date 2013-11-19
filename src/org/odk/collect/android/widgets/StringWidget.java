@@ -134,6 +134,7 @@ public class StringWidget extends QuestionWidget {
     @Override
     public void clearAnswer() {
         mAnswer.setText(null);
+        answerChanged();
     }
 
 

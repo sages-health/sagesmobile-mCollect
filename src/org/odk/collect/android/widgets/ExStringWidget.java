@@ -185,6 +185,7 @@ public class ExStringWidget extends QuestionWidget implements IBinaryWidget {
     @Override
     public void clearAnswer() {
     	mAnswer.setText(null);
+        answerChanged();
     }
 
 

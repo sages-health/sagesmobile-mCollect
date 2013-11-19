@@ -249,6 +249,7 @@ public class DateTimeWidget extends QuestionWidget {
             mDateListener);
         mTimePicker.setCurrentHour(ldt.getHourOfDay());
         mTimePicker.setCurrentMinute(ldt.getMinuteOfHour());
+        answerChanged();
     }
 
 

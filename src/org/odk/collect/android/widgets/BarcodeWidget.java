@@ -109,6 +109,7 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 	public void clearAnswer() {
 		mStringAnswer.setText(null);
 		mGetBarcodeButton.setText(getContext().getString(R.string.get_barcode));
+        answerChanged();
 	}
 
 	@Override

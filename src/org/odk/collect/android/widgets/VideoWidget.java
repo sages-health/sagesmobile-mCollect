@@ -220,6 +220,7 @@ public class VideoWidget extends QuestionWidget implements IBinaryWidget {
 
 		// reset buttons
 		mPlayButton.setEnabled(false);
+        answerChanged();
 	}
 
 	@Override

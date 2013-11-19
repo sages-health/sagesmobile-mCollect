@@ -199,6 +199,7 @@ public class SpinnerMultiWidget extends QuestionWidget {
         for (int i = 0; i < selections.length; i++) {
             selections[i] = false;
         }
+        answerChanged();
     }
 
 

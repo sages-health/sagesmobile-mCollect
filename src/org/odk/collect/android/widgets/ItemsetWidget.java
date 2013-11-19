@@ -257,6 +257,7 @@ public class ItemsetWidget extends QuestionWidget implements
     public void clearAnswer() {
         mButtons.clearCheck();
         mAnswer = null;
+        answerChanged();
     }
 
     @Override

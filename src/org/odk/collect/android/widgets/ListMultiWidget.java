@@ -275,6 +275,7 @@ public class ListMultiWidget extends QuestionWidget {
                 c.setChecked(false);
             }
         }
+        answerChanged();
     }
 
 

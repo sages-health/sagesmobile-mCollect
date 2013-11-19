@@ -219,6 +219,7 @@ public class DateWidget extends QuestionWidget {
         DateTime ldt = new DateTime();
         mDatePicker.init(ldt.getYear(), ldt.getMonthOfYear() - 1, ldt.getDayOfMonth(),
             mDateListener);
+        answerChanged();
     }
 
 

@@ -104,6 +104,7 @@ public class TriggerWidget extends QuestionWidget {
     public void clearAnswer() {
         mStringAnswer.setText(null);
         mTriggerButton.setChecked(false);
+        answerChanged();
     }
 
 

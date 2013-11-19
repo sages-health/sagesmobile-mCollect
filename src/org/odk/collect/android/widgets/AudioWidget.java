@@ -220,6 +220,7 @@ public class AudioWidget extends QuestionWidget implements IBinaryWidget {
 
 		// reset buttons
 		mPlayButton.setEnabled(false);
+        answerChanged();
 	}
 
 	@Override

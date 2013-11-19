@@ -270,6 +270,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 		mStringAnswer.setText(null);
 		mAnswerDisplay.setText(null);
 		updateButtonLabelsAndVisibility(false);
+        answerChanged();
 	}
 
 	@Override

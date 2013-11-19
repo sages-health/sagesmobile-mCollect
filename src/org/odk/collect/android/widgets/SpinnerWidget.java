@@ -134,6 +134,7 @@ public class SpinnerWidget extends QuestionWidget {
         // It seems that spinners cannot return a null answer. This resets the answer
         // to its original value, but it is not null.
         spinner.setSelection(mItems.size());
+        answerChanged();
     }
 
 

@@ -110,7 +110,7 @@ public class BearingWidget extends QuestionWidget implements IBinaryWidget {
         mAnswerDisplay.setText(null);
         mGetBearingButton.setText(getContext()
                 .getString(R.string.get_bearing));
-
+        answerChanged();
     }
 
     @Override

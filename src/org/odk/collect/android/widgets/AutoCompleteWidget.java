@@ -137,6 +137,7 @@ public class AutoCompleteWidget extends QuestionWidget {
     @Override
     public void clearAnswer() {
         autocomplete.setText("");
+        answerChanged();
     }
 
 

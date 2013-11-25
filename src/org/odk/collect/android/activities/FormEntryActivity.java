@@ -1226,25 +1226,25 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 						groups, advancingPage, onAnswerChangedListener);
 				
 				// set the breadcrumbs
-		        StringBuffer s = new StringBuffer("");
-		        String t = "";
-		        int i;
-		        // list all groups in one string
-		        for (FormEntryCaption g : groups) {
-		            i = g.getMultiplicity() + 1;
-		            t = g.getLongText();
-		            if (t != null) {
-		                s.append(t);
-		                if (g.repeats() && i > 0) {
-		                    s.append(" (" + i + ")");
-		                }
-		                s.append(" > ");
-		            }
-		        }
+				StringBuffer s = new StringBuffer("");
+				String t = "";
+				int i;
+				// list all groups in one string
+				for (FormEntryCaption g : groups) {
+					i = g.getMultiplicity() + 1;
+					t = g.getLongText();
+					if (t != null) {
+						s.append(t);
+						if (g.repeats() && i > 0) {
+							s.append(" (" + i + ")");
+						}
+						s.append(" > ");
+					}
+				}
 
-		        if (s.length() > 0) {
-		            mBreadCrumbs.setText(s.substring(0, s.length() - 3));
-		        }
+				if (s.length() > 0) {
+					mBreadCrumbs.setText(s.substring(0, s.length() - 3));
+				}
 				
 				
 				Log.i(t,
@@ -2604,8 +2604,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			// OR left/right of > .5"
 			DisplayMetrics dm = new DisplayMetrics();
 			getWindowManager().getDefaultDisplay().getMetrics(dm);
-//			int xPixelLimit = (int) (dm.xdpi * .25);
-			int xPixelLimit = (int) (dm.xdpi * .5);  // CHANGED TO HALF INCH FOR HORIZONTAL SWIPE
+			int xPixelLimit = (int) (dm.xdpi * .25);
 			int yPixelLimit = (int) (dm.ydpi * .25);
 
 			if (mCurrentView instanceof ODKView) {

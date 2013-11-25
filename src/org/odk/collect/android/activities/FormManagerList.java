@@ -73,7 +73,7 @@ public class FormManagerList extends ListActivity implements DiskSyncListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        Util.forceOverflowMenu(this);
+		Util.forceOverflowMenu(this);
 		setContentView(R.layout.form_manage_list);
 
 		mDeleteButton = (Button) findViewById(R.id.delete_button);

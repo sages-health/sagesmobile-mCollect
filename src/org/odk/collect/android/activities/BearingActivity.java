@@ -43,7 +43,8 @@ public class BearingActivity extends Activity implements SensorEventListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Util.forceOverflowMenu(this);
-//        setTitle(getString(R.string.app_name) + " > " + getString(R.string.get_bearing));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > " + getString(R.string.get_bearing));
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);

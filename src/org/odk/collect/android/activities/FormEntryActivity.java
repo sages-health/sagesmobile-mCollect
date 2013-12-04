@@ -264,8 +264,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 
 		setContentView(R.layout.form_entry);
-//		setTitle(getString(R.string.app_name) + " > "
-//				+ getString(R.string.loading_form));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > "
+					+ getString(R.string.loading_form));
 
 		mBeenSwiped = false;
 		mAlertDialog = null;

@@ -131,8 +131,9 @@ public class MainMenuActivity extends Activity {
                         .getVersionedAppName());
 		}
 
-//        setTitle(getString(R.string.app_name) + " > "
-//                        + getString(R.string.main_menu));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+	        setTitle(getString(R.string.app_name) + " > "
+	                        + getString(R.string.main_menu));
 
 		mAdminPreferences = this.getSharedPreferences(
 				AdminPreferencesActivity.ADMIN_PREFERENCES, 0);

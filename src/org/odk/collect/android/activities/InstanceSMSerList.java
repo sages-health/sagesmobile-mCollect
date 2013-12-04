@@ -132,7 +132,8 @@ public class InstanceSMSerList extends ListActivity {
         mUploadButton.setEnabled(!(mSelected.size() == 0));
 
         // set title
-//        setTitle(getString(R.string.app_name) + " > " + getString(R.string.send_data));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > " + getString(R.string.send_data));
 
         // if current activity is being reinitialized due to changing orientation restore all check
         // marks for ones selected

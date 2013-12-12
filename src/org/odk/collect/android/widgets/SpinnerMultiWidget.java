@@ -20,6 +20,7 @@ import org.javarosa.core.model.data.SelectMultiData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -64,8 +65,8 @@ public class SpinnerMultiWidget extends QuestionWidget {
 
 
     @SuppressWarnings("unchecked")
-    public SpinnerMultiWidget(final Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public SpinnerMultiWidget(final Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         mItems = prompt.getSelectChoices();
         mPrompt = prompt;
 
@@ -121,6 +122,7 @@ public class SpinnerMultiWidget extends QuestionWidget {
                         @Override
                         public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                             selections[which] = isChecked;
+                            answerChanged();
                         }
                     });
                 AlertDialog alert = alert_builder.create();
@@ -171,8 +173,9 @@ public class SpinnerMultiWidget extends QuestionWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
-    	clearFocus();
+    public IAnswerData getAnswer(boolean clearFocus) {
+    	if (clearFocus)
+    		clearFocus();
         Vector<Selection> vc = new Vector<Selection>();
         for (int i = 0; i < mItems.size(); i++) {
             if (selections[i]) {
@@ -196,6 +199,7 @@ public class SpinnerMultiWidget extends QuestionWidget {
         for (int i = 0; i < selections.length; i++) {
             selections[i] = false;
         }
+        answerChanged();
     }
 
 

@@ -31,6 +31,7 @@ import org.odk.collect.android.listeners.AdvanceToNextListener;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.views.AudioButton.AudioHandler;
 import org.odk.collect.android.views.ExpandedHeightGridView;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -99,8 +100,8 @@ public class GridWidget extends QuestionWidget {
     int resizeWidth;
 
     public GridWidget(Context context, FormEntryPrompt prompt, int numColumns,
-            final boolean quickAdvance) {
-        super(context, prompt);
+            final boolean quickAdvance, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         mItems = prompt.getSelectChoices();
         mPrompt = prompt;
         listener = (AdvanceToNextListener) context;
@@ -297,6 +298,7 @@ public class GridWidget extends QuestionWidget {
                 } else if ( audioHandlers[position] != null ) {
                 	audioHandlers[position].playAudio(getContext());
                 }
+                answerChanged();
             }
         });
 
@@ -326,7 +328,7 @@ public class GridWidget extends QuestionWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         for (int i = 0; i < choices.length; ++i) {
             if (selected[i]) {
                 SelectChoice sc = mItems.elementAt(i);
@@ -343,7 +345,7 @@ public class GridWidget extends QuestionWidget {
             selected[i] = false;
             imageViews[i].setBackgroundColor(Color.WHITE);
         }
-
+        answerChanged();
     }
 
 

@@ -60,6 +60,7 @@ public class FormHierarchyActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
         setContentView(R.layout.hierarchy_layout);
 
         FormController formController = Collect.getInstance().getFormController();
@@ -67,8 +68,7 @@ public class FormHierarchyActivity extends ListActivity {
         // We use a static FormEntryController to make jumping faster.
         mStartIndex = formController.getFormIndex();
 
-        setTitle(getString(R.string.app_name) + " > "
-                + formController.getFormTitle());
+        setTitle(formController.getFormTitle());
 
         mPath = (TextView) findViewById(R.id.pathtext);
 

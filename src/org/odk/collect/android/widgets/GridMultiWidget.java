@@ -30,6 +30,7 @@ import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.views.AudioButton.AudioHandler;
 import org.odk.collect.android.views.ExpandedHeightGridView;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -97,8 +98,8 @@ public class GridMultiWidget extends QuestionWidget {
     int resizeWidth;
 
     @SuppressWarnings("unchecked")
-    public GridMultiWidget(Context context, FormEntryPrompt prompt, int numColumns) {
-        super(context, prompt);
+    public GridMultiWidget(Context context, FormEntryPrompt prompt, int numColumns, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         mItems = prompt.getSelectChoices();
         mPrompt = prompt;
 
@@ -292,7 +293,7 @@ public class GridMultiWidget extends QuestionWidget {
                 	}
             		lastClickPosition = position;
                 }
-
+                answerChanged();
             }
         });
 
@@ -333,7 +334,7 @@ public class GridMultiWidget extends QuestionWidget {
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         Vector<Selection> vc = new Vector<Selection>();
         for (int i = 0; i < mItems.size(); i++) {
             if (selected[i]) {
@@ -356,7 +357,7 @@ public class GridMultiWidget extends QuestionWidget {
             selected[i] = false;
             imageViews[i].setBackgroundColor(Color.WHITE);
         }
-
+        answerChanged();
     }
 
 

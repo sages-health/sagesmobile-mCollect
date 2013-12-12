@@ -19,6 +19,7 @@ import org.javarosa.core.model.data.StringData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.util.TypedValue;
@@ -48,8 +49,8 @@ public class TriggerWidget extends QuestionWidget {
     }
 
 
-    public TriggerWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public TriggerWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         mPrompt = prompt;
 
         this.setOrientation(LinearLayout.VERTICAL);
@@ -73,6 +74,7 @@ public class TriggerWidget extends QuestionWidget {
                 	Collect.getInstance().getActivityLogger().logInstanceAction(TriggerWidget.this, "triggerButton", 
                 			"null", mPrompt.getIndex());
                 }
+                answerChanged();
             }
         });
 
@@ -102,11 +104,12 @@ public class TriggerWidget extends QuestionWidget {
     public void clearAnswer() {
         mStringAnswer.setText(null);
         mTriggerButton.setChecked(false);
+        answerChanged();
     }
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         String s = mStringAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;

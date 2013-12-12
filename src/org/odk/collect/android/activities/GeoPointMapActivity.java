@@ -87,6 +87,7 @@ public class GeoPointMapActivity extends FragmentActivity implements LocationLis
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
         if ( savedInstanceState != null ) {
         	mLocationCount = savedInstanceState.getInt(LOCATION_COUNT);

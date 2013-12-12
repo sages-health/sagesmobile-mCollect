@@ -135,4 +135,5 @@
             android:layout="?android:attr/preferenceLayoutChild"
             android:title="@string/splash_path" />
     </PreferenceCategory>
+
 </PreferenceScreen>

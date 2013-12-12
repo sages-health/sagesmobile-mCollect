@@ -25,6 +25,7 @@ import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.views.MediaLayout;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.util.TypedValue;
@@ -47,8 +48,8 @@ public class SelectOneWidget extends QuestionWidget implements
 	Vector<SelectChoice> mItems; // may take a while to compute
 	ArrayList<RadioButton> buttons;
 
-	public SelectOneWidget(Context context, FormEntryPrompt prompt) {
-		super(context, prompt);
+	public SelectOneWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+		super(context, prompt, onAnswerChangedListener);
 
 		mItems = prompt.getSelectChoices();
 		buttons = new ArrayList<RadioButton>();
@@ -122,13 +123,14 @@ public class SelectOneWidget extends QuestionWidget implements
 		for (RadioButton button : this.buttons) {
 			if (button.isChecked()) {
 				button.setChecked(false);
+				answerChanged();
 				return;
 			}
 		}
 	}
 
 	@Override
-	public IAnswerData getAnswer() {
+	public IAnswerData getAnswer(boolean clearFocus) {
 		int i = getCheckedId();
 		if (i == -1) {
 			return null;
@@ -171,6 +173,7 @@ public class SelectOneWidget extends QuestionWidget implements
 		
        	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged", 
     			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
+       	answerChanged();
 	}
 
 	@Override

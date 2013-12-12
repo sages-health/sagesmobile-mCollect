@@ -22,6 +22,7 @@ import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.MediaUtils;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -60,8 +61,8 @@ public class VideoWidget extends QuestionWidget implements IBinaryWidget {
 
 	private String mInstanceFolder;
 
-	public VideoWidget(Context context, FormEntryPrompt prompt) {
-		super(context, prompt);
+	public VideoWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+		super(context, prompt, onAnswerChangedListener);
 
 		mInstanceFolder = Collect.getInstance().getFormController()
 				.getInstancePath().getParent();
@@ -219,10 +220,11 @@ public class VideoWidget extends QuestionWidget implements IBinaryWidget {
 
 		// reset buttons
 		mPlayButton.setEnabled(false);
+        answerChanged();
 	}
 
 	@Override
-	public IAnswerData getAnswer() {
+	public IAnswerData getAnswer(boolean clearFocus) {
 		if (mBinaryName != null) {
 			return new StringData(mBinaryName.toString());
 		} else {
@@ -288,6 +290,7 @@ public class VideoWidget extends QuestionWidget implements IBinaryWidget {
 
 		mBinaryName = newVideo.getName();
 		Collect.getInstance().getFormController().setIndexWaitingForData(null);
+		answerChanged();
 	}
 
 	@Override

@@ -99,6 +99,7 @@ public class InstanceUploaderList extends ListActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 		setContentView(R.layout.instance_uploader_list);
 
 		// set up long click listener
@@ -188,8 +189,9 @@ public class InstanceUploaderList extends ListActivity implements
 		mUploadButton.setEnabled(!(mSelected.size() == 0));
 
 		// set title
-		setTitle(getString(R.string.app_name) + " > "
-				+ getString(R.string.send_data));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > "
+					+ getString(R.string.send_data));
 
 		// if current activity is being reinitialized due to changing
 		// orientation restore all check

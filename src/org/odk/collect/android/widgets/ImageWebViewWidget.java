@@ -24,6 +24,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.MediaUtils;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -126,8 +127,8 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 		return false;
 	}
 
-	public ImageWebViewWidget(Context context, FormEntryPrompt prompt) {
-		super(context, prompt);
+	public ImageWebViewWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+		super(context, prompt, onAnswerChangedListener);
 
 		mInstanceFolder = Collect.getInstance().getFormController()
 				.getInstancePath().getParent();
@@ -293,10 +294,11 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 
 		// reset buttons
 		mCaptureButton.setText(getContext().getString(R.string.capture_image));
+        answerChanged();
 	}
 
 	@Override
-	public IAnswerData getAnswer() {
+	public IAnswerData getAnswer(boolean clearFocus) {
 		if (mBinaryName != null) {
 			return new StringData(mBinaryName.toString());
 		} else {
@@ -335,6 +337,7 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
         }
 
     	Collect.getInstance().getFormController().setIndexWaitingForData(null);
+    	answerChanged();
     }
 
 	@Override

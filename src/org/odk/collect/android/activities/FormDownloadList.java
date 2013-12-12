@@ -123,8 +123,10 @@ public class FormDownloadList extends ListActivity implements FormListDownloader
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
         setContentView(R.layout.remote_file_manage_list);
-        setTitle(getString(R.string.app_name) + " > " + getString(R.string.get_forms));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > " + getString(R.string.get_forms));
         mAlertMsg = getString(R.string.please_wait);
 
         // need white background before load

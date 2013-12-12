@@ -23,6 +23,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.joda.time.DateTime;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -52,8 +53,8 @@ public class DateWidget extends QuestionWidget {
 	private HorizontalScrollView scrollView = null;
 
 
-    public DateWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public DateWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         mDatePicker = new DatePicker(getContext());
         mDatePicker.setId(QuestionWidget.newUniqueId());
@@ -206,6 +207,7 @@ public class DateWidget extends QuestionWidget {
             // create date widget with current time as of right now
             clearAnswer();
         }
+        answerChanged();
     }
 
 
@@ -217,15 +219,17 @@ public class DateWidget extends QuestionWidget {
         DateTime ldt = new DateTime();
         mDatePicker.init(ldt.getYear(), ldt.getMonthOfYear() - 1, ldt.getDayOfMonth(),
             mDateListener);
+        answerChanged();
     }
 
 
     @Override
-    public IAnswerData getAnswer() {
-    	if ( showCalendar ) {
+    public IAnswerData getAnswer(boolean clearFocus) {
+    	if ( showCalendar && clearFocus ) {
     		scrollView.clearChildFocus(mDatePicker);
     	}
-    	clearFocus();
+    	if (clearFocus)
+    		clearFocus();
         DateTime ldt =
             new DateTime(mDatePicker.getYear(), (!showCalendar && hideMonth) ? 1 : mDatePicker.getMonth() + 1,
                     (!showCalendar && (hideMonth || hideDay)) ? 1 : mDatePicker.getDayOfMonth(), 0, 0);

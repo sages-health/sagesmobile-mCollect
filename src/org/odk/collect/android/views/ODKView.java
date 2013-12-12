@@ -25,6 +25,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.widgets.IBinaryWidget;
 import org.odk.collect.android.widgets.QuestionWidget;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 import org.odk.collect.android.widgets.WidgetFactory;
 
 import android.content.Context;
@@ -58,9 +59,12 @@ public class ODKView extends ScrollView implements OnLongClickListener {
     
     public final static String FIELD_LIST = "field-list";
 
+	private OnAnswerChangedListener onAnswerChangedListener;
+
     public ODKView(Context context, FormEntryPrompt[] questionPrompts,
-            FormEntryCaption[] groups, boolean advancingPage) {
+            FormEntryCaption[] groups, boolean advancingPage, OnAnswerChangedListener onAnswerChangedListener) {
         super(context);
+		this.onAnswerChangedListener = onAnswerChangedListener;
 
         widgets = new ArrayList<QuestionWidget>();
 
@@ -76,7 +80,7 @@ public class ODKView extends ScrollView implements OnLongClickListener {
 
         // display which group you are in as well as the question
 
-        addGroupText(groups);
+//        addGroupText(groups);
         boolean first = true;
         int id = 0;
         for (FormEntryPrompt p : questionPrompts) {
@@ -91,7 +95,7 @@ public class ODKView extends ScrollView implements OnLongClickListener {
 
             // if question or answer type is not supported, use text widget
             QuestionWidget qw =
-                WidgetFactory.createWidgetFromPrompt(p, getContext());
+                WidgetFactory.createWidgetFromPrompt(p, getContext(), onAnswerChangedListener);
             qw.setLongClickable(true);
             qw.setOnLongClickListener(this);
             qw.setId(VIEW_ID + id++);
@@ -152,43 +156,43 @@ public class ODKView extends ScrollView implements OnLongClickListener {
              */
             QuestionWidget q = i.next();
             FormEntryPrompt p = q.getPrompt();
-            answers.put(p.getIndex(), q.getAnswer());
+            answers.put(p.getIndex(), q.getAnswer(true));
         }
 
         return answers;
     }
 
 
-    /**
-     * // * Add a TextView containing the hierarchy of groups to which the question belongs. //
-     */
-    private void addGroupText(FormEntryCaption[] groups) {
-        StringBuffer s = new StringBuffer("");
-        String t = "";
-        int i;
-        // list all groups in one string
-        for (FormEntryCaption g : groups) {
-            i = g.getMultiplicity() + 1;
-            t = g.getLongText();
-            if (t != null) {
-                s.append(t);
-                if (g.repeats() && i > 0) {
-                    s.append(" (" + i + ")");
-                }
-                s.append(" > ");
-            }
-        }
-
-        // build view
-        if (s.length() > 0) {
-            TextView tv = new TextView(getContext());
-            tv.setText(s.substring(0, s.length() - 3));
-            int questionFontsize = Collect.getQuestionFontsize();
-            tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, questionFontsize - 4);
-            tv.setPadding(0, 0, 0, 5);
-            mView.addView(tv, mLayout);
-        }
-    }
+//    /**
+//     * // * Add a TextView containing the hierarchy of groups to which the question belongs. //
+//     */
+//    private void addGroupText(FormEntryCaption[] groups) {
+//        StringBuffer s = new StringBuffer("");
+//        String t = "";
+//        int i;
+//        // list all groups in one string
+//        for (FormEntryCaption g : groups) {
+//            i = g.getMultiplicity() + 1;
+//            t = g.getLongText();
+//            if (t != null) {
+//                s.append(t);
+//                if (g.repeats() && i > 0) {
+//                    s.append(" (" + i + ")");
+//                }
+//                s.append(" > ");
+//            }
+//        }
+//
+//        // build view
+//        if (s.length() > 0) {
+//            TextView tv = new TextView(getContext());
+//            tv.setText(s.substring(0, s.length() - 3));
+//            int questionFontsize = Collect.getQuestionFontsize();
+//            tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, questionFontsize - 4);
+//            tv.setPadding(0, 0, 0, 5);
+//            mView.addView(tv, mLayout);
+//        }
+//    }
 
 
     public void setFocus(Context context) {

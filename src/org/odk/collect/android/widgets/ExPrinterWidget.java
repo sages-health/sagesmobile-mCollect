@@ -18,6 +18,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -116,8 +117,8 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
 
     private Button mLaunchIntentButton;
 
-    public ExPrinterWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public ExPrinterWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         TableLayout.LayoutParams params = new TableLayout.LayoutParams();
         params.setMargins(7, 5, 7, 5);
@@ -209,11 +210,12 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
 
     @Override
     public void clearAnswer() {
+        // nothing to clear
     }
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
     	return mPrompt.getAnswerValue();
     }
 
@@ -224,6 +226,7 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
     @Override
     public void setBinaryData(Object answer) {
     	Collect.getInstance().getFormController().setIndexWaitingForData(null);
+    	answerChanged();
     }
 
     @Override

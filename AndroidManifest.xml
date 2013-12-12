@@ -31,7 +31,7 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="16" />
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="18" />
     <uses-permission 
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		android:name="android.permission.RECEIVE_SMS" />
@@ -72,7 +72,7 @@
     <application
         android:name="org.odk.collect.android.application.Collect"
         android:largeHeap="true"
-        android:icon="@drawable/notes"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Collect" >
         <provider
@@ -105,7 +105,7 @@
         <activity
             android:name=".activities.FormEntryActivity"
             android:configChanges="orientation"
-            android:label="@string/app_name"
+            android:label="@string/loading_form"
             android:windowSoftInputMode="adjustResize" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -125,13 +125,13 @@
             android:label="@string/app_name" />
         <activity
             android:name=".activities.InstanceChooserListSages"
-            android:label="@string/app_name" />
+            android:label="@string/review_data" />
         <activity
             android:name=".activities.DrawActivity"
-            android:label="@string/app_name" />
+            android:label="@string/draw_image" />
         <activity
             android:name=".activities.InstanceChooserList"
-            android:label="@string/app_name" />
+            android:label="@string/review_data" />
 
         <intent-filter>
             <action android:name="android.intent.action.VIEW" />
@@ -144,10 +144,10 @@
 
         <activity
             android:name=".activities.InstanceChooserTabs"
-            android:label="@string/app_name" />
+            android:label="@string/review_data" />
         <activity
             android:name=".activities.FormChooserList"
-            android:label="@string/app_name" >
+            android:label="@string/enter_data" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
@@ -163,16 +163,16 @@
             android:label="@string/app_name" />
         <activity
             android:name=".activities.FormDownloadList"
-            android:label="@string/app_name" />
+            android:label="@string/get_forms" />
         <activity
             android:name=".activities.DataManagerList"
             android:label="@string/app_name" />
         <activity
             android:name=".activities.FileManagerTabs"
-            android:label="@string/app_name" />
+            android:label="@string/manage_files" />
         <activity
             android:name=".activities.InstanceUploaderList"
-            android:label="@string/app_name">
+            android:label="@string/send_data">
 	        <intent-filter>
 	            <action android:name="android.intent.action.VIEW" />
 	            <action android:name="android.intent.action.EDIT" />
@@ -182,35 +182,40 @@
         </activity>
         <activity
             android:name=".activities.InstanceSMSerList"
-            android:label="@string/app_name" />
+            android:label="@string/send_data" />
         <activity
             android:name=".activities.InstanceUploaderActivity"
-            android:label="@string/app_name" />
+            android:label="@string/send_data" />
         <activity
 			android:name=".activities.InstanceSMSerActivity"
-			android:label="@string/app_name" />
+			android:label="@string/send_data" />
         <activity
             android:name=".preferences.PreferencesActivity"
-            android:label="@string/app_name" />
+            android:label="@string/general_preferences" />
         <activity
             android:name=".preferences.PreferencesSmsActivity"
-            android:label="@string/app_name" />
+            android:label="@string/general_preferences" />
         <activity
             android:name=".preferences.AdminPreferencesActivity"
-            android:label="@string/app_name" />
+            android:label="@string/admin_preferences" />
         <activity
             android:name=".activities.FormHierarchyActivity"
             android:label="@string/app_name" />
         <activity
             android:name=".activities.GeoPointActivity"
-            android:label="@string/app_name" />
+            android:label="@string/get_location" />
         <activity
             android:name=".activities.GeoPointMapActivity"
             android:label="@string/app_name" />
         <activity
             android:name=".activities.GeoPointMapActivitySdk7"
             android:label="@string/app_name" />
-        <activity
+             <activity
+                   android:name=".activities.BearingActivity"
+                   android:label="@string/get_bearing"
+      />
+ 
+ <activity
             android:name=".activities.SplashScreenActivity"
             android:label="@string/app_name"
             android:theme="@android:style/Theme.Dialog" >

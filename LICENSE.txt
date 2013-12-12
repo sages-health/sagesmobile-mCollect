@@ -174,3 +174,36 @@
       of your accepting any such warranty or additional liability.
 
    END OF TERMS AND CONDITIONS
+
+
+ This software also uses these libraries:
+
+ http://james.apache.org/mime4j/	/Apache 2.0/
+	apache-mime4j-0.6.jar
+	
+http://apache.org/		/Apache 2.0/
+	httpmime-4.0.jar
+ 
+ http://apache.org/		/Apache 2.0/
+	httpclient-4.1.2.jar
+	httpcore-4.1.2.jar
+	httpmime-4.1.2.jar
+
+	Repackaged for Android as: httpclientandroidlib-4.1.2.jar
+	with modified LogFactory and Log. 
+	see: http://code.google.com/r/mitchellsundt-logfactory/source/browse
+
+https://bitbucket.org/javarosa/javarosa/wiki/Home		/Apache 2.0/
+	javarosa-libraries.jar
+
+	Modified from the core distribution.
+	see https://bitbucket.org/m.sundt/javarosa/src/
+
+http://joda-time.sourceforge.net/ 		/Apache 2.0/
+	joda-time-2.0.jar
+
+http://kxml.sourceforge.net/kxml2/		/BSD license/
+	kxml2-2.3.0.jar
+	
+http://code.google.com/p/regexp-me/		/Apache 2.0/
+	regexp-me.jar

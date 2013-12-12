@@ -37,8 +37,8 @@ public class TimeWidget extends QuestionWidget {
     private TimePicker mTimePicker;
 
 
-    public TimeWidget(Context context, final FormEntryPrompt prompt) {
-        super(context, prompt);
+    public TimeWidget(Context context, final FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         mTimePicker = new TimePicker(getContext());
         mTimePicker.setId(QuestionWidget.newUniqueId());
@@ -73,6 +73,7 @@ public class TimeWidget extends QuestionWidget {
 			public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
             	Collect.getInstance().getActivityLogger().logInstanceAction(TimeWidget.this, "onTimeChanged", 
             			String.format("%1$02d:%2$02d",hourOfDay, minute), mPrompt.getIndex());
+            	answerChanged();
 			}
 		});
 
@@ -90,12 +91,14 @@ public class TimeWidget extends QuestionWidget {
         DateTime ldt = new DateTime();
         mTimePicker.setCurrentHour(ldt.getHourOfDay());
         mTimePicker.setCurrentMinute(ldt.getMinuteOfHour());
+        answerChanged();
     }
 
 
     @Override
-    public IAnswerData getAnswer() {
-    	clearFocus();
+    public IAnswerData getAnswer(boolean clearFocus) {
+    	if (clearFocus)
+    		clearFocus();
         // use picker time, convert to today's date, store as utc
         DateTime ldt =
             (new DateTime()).withTime(mTimePicker.getCurrentHour(), mTimePicker.getCurrentMinute(),

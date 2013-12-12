@@ -18,6 +18,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.text.Editable;
@@ -44,13 +45,13 @@ public class StringWidget extends QuestionWidget {
     boolean mReadOnly = false;
     protected EditText mAnswer;
 
-    public StringWidget(Context context, FormEntryPrompt prompt) {
-    	this(context, prompt, true);
+    public StringWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+    	this(context, prompt, true, onAnswerChangedListener);
     	setupChangeListener();
     }
 
-    protected StringWidget(Context context, FormEntryPrompt prompt, boolean derived) {
-        super(context, prompt);
+    protected StringWidget(Context context, FormEntryPrompt prompt, boolean derived, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         mAnswer = new EditText(context);
         mAnswer.setId(QuestionWidget.newUniqueId());
         mReadOnly = prompt.isReadOnly();
@@ -114,6 +115,7 @@ public class StringWidget extends QuestionWidget {
 				if (!s.toString().equals(oldText)) {
 					Collect.getInstance().getActivityLogger()
 						.logInstanceAction(this, "answerTextChanged", s.toString(),	getPrompt().getIndex());
+					answerChanged();
 				}
 			}
 
@@ -132,12 +134,14 @@ public class StringWidget extends QuestionWidget {
     @Override
     public void clearAnswer() {
         mAnswer.setText(null);
+        answerChanged();
     }
 
 
     @Override
-    public IAnswerData getAnswer() {
-    	clearFocus();
+    public IAnswerData getAnswer(boolean clearFocus) {
+    	if (clearFocus)
+    		clearFocus();
     	String s = mAnswer.getText().toString();
         if (s == null || s.equals("")) {
             return null;

@@ -60,6 +60,7 @@ public class DataManagerList extends ListActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 		setContentView(R.layout.data_manage_list);
 
 		mDeleteButton = (Button) findViewById(R.id.delete_button);

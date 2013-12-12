@@ -22,6 +22,7 @@ import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.views.MediaLayout;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.util.TypedValue;
@@ -48,8 +49,8 @@ public class SelectMultiWidget extends QuestionWidget {
 
 
     @SuppressWarnings("unchecked")
-    public SelectMultiWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public SelectMultiWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         mPrompt = prompt;
         mCheckboxes = new ArrayList<CheckBox>();
         mItems = prompt.getSelectChoices();
@@ -95,6 +96,7 @@ public class SelectMultiWidget extends QuestionWidget {
                                	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.select", 
                             			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
                             }
+                            answerChanged();
                         }
                     }
                 });
@@ -141,11 +143,12 @@ public class SelectMultiWidget extends QuestionWidget {
     			c.setChecked(false);
     		}
     	}
+        answerChanged();
     }
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         Vector<Selection> vc = new Vector<Selection>();
         for ( int i = 0; i < mCheckboxes.size() ; ++i ) {
         	CheckBox c = mCheckboxes.get(i);

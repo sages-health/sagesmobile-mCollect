@@ -89,6 +89,7 @@ public class DrawActivity extends Activity {
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
+        Util.forceOverflowMenu(this);
 		try {
 			saveFile(savepointImage);
 		} catch (FileNotFoundException e) {
@@ -167,8 +168,9 @@ public class DrawActivity extends Activity {
 					getString(R.string.draw_image));
 		}
 
-		setTitle(getString(R.string.app_name) + " > "
-				+ getString(R.string.draw_image));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > "
+					+ getString(R.string.draw_image));
 
 		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		RelativeLayout v = (RelativeLayout) inflater.inflate(

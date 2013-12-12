@@ -79,12 +79,14 @@ public class InstanceSMSerActivity extends Activity implements InstanceSMSerList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
         mAlertMsg = getString(R.string.please_wait);
 
         mUploadedInstances = new HashMap<String, String>();
 
-        setTitle(getString(R.string.app_name) + " > " + getString(R.string.send_data));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > " + getString(R.string.send_data));
 
         // get instances to upload
         Intent intent = getIntent();

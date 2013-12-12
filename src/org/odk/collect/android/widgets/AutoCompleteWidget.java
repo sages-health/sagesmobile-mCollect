@@ -19,9 +19,12 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.form.api.FormEntryPrompt;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -59,8 +62,8 @@ public class AutoCompleteWidget extends QuestionWidget {
     String match_chars = "chars";
 
 
-    public AutoCompleteWidget(Context context, FormEntryPrompt prompt, String filterType) {
-        super(context, prompt);
+    public AutoCompleteWidget(Context context, FormEntryPrompt prompt, String filterType, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
         mItems = prompt.getSelectChoices();
         mPrompt = prompt;
 
@@ -98,13 +101,20 @@ public class AutoCompleteWidget extends QuestionWidget {
         }
 
         addView(autocomplete);
-
+        autocomplete.addTextChangedListener(new TextWatcher() {
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+			@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+			@Override public void afterTextChanged(Editable s) {
+				answerChanged();
+			}
+		});
     }
 
 
     @Override
-    public IAnswerData getAnswer() {
-    	clearFocus();
+    public IAnswerData getAnswer(boolean clearFocus) {
+    	if (clearFocus)
+    		clearFocus();
     	String response = autocomplete.getText().toString();
         for (SelectChoice sc : mItems) {
             if (response.equals(mPrompt.getSelectChoiceText(sc))) {
@@ -127,6 +137,7 @@ public class AutoCompleteWidget extends QuestionWidget {
     @Override
     public void clearAnswer() {
         autocomplete.setText("");
+        answerChanged();
     }
 
 

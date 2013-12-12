@@ -29,6 +29,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.FileUtils;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -70,8 +71,8 @@ public class ListWidget extends QuestionWidget implements OnCheckedChangeListene
     
     ArrayList<RadioButton> buttons;
 
-    public ListWidget(Context context, FormEntryPrompt prompt, boolean displayLabel) {
-        super(context, prompt);
+    public ListWidget(Context context, FormEntryPrompt prompt, boolean displayLabel, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         mItems = prompt.getSelectChoices();
         buttons = new ArrayList<RadioButton>();
@@ -248,6 +249,7 @@ public class ListWidget extends QuestionWidget implements OnCheckedChangeListene
         for (RadioButton button : this.buttons) {
             if (button.isChecked()) {
                 button.setChecked(false);
+                answerChanged();
                 return;
             }
         }
@@ -255,7 +257,7 @@ public class ListWidget extends QuestionWidget implements OnCheckedChangeListene
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         int i = getCheckedId();
         if (i == -1) {
             return null;
@@ -300,6 +302,7 @@ public class ListWidget extends QuestionWidget implements OnCheckedChangeListene
         }
        	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged", 
     			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
+       	answerChanged();
     }
 
 

@@ -27,6 +27,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.listeners.AdvanceToNextListener;
 import org.odk.collect.android.views.MediaLayout;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -54,8 +55,8 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
     AdvanceToNextListener listener;
 
 
-    public SelectOneAutoAdvanceWidget(Context context, FormEntryPrompt prompt) {
-        super(context, prompt);
+    public SelectOneAutoAdvanceWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+        super(context, prompt, onAnswerChangedListener);
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
 
@@ -136,6 +137,7 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
         for (RadioButton button : this.buttons) {
             if (button.isChecked()) {
                 button.setChecked(false);
+                answerChanged();
                 return;
             }
         }
@@ -143,7 +145,7 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
 
 
     @Override
-    public IAnswerData getAnswer() {
+    public IAnswerData getAnswer(boolean clearFocus) {
         int i = getCheckedId();
         if (i == -1) {
             return null;
@@ -193,6 +195,7 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
     			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
 
        	listener.advance();
+       	answerChanged();
     }
 
 

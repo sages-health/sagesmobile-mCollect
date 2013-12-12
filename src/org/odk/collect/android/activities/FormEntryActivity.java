@@ -17,11 +17,14 @@ package org.odk.collect.android.activities;
 import java.io.File;
 import java.io.FileFilter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 
 import org.javarosa.core.model.FormIndex;
+import org.javarosa.core.model.IFormElement;
+import org.javarosa.core.model.QuestionDef;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryController;
@@ -48,6 +51,7 @@ import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.MediaUtils;
 import org.odk.collect.android.views.ODKView;
 import org.odk.collect.android.widgets.QuestionWidget;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -60,6 +64,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -71,6 +76,7 @@ import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.GestureDetector;
@@ -139,9 +145,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	public static final int SIGNATURE_CAPTURE = 14;
 	public static final int ANNOTATE_IMAGE = 15;
 	public static final int ALIGNED_IMAGE = 16;
+	public static final int BEARING_CAPTURE = 17;
 
 	// Extra returned from gp activity
 	public static final String LOCATION_RESULT = "LOCATION_RESULT";
+	public static final String BEARING_RESULT = "BEARING_RESULT";
 
 	public static final String KEY_INSTANCES = "instances";
 	public static final String KEY_SUCCESS = "success";
@@ -202,10 +210,49 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 	private SharedPreferences mAdminPreferences;
 
+	private TextView mBreadCrumbs;
+	
+	private void highlightError(QuestionWidget questionWidget, boolean on) {
+		if (on)
+			questionWidget.setBackgroundColor(0x66990000);
+		else
+			questionWidget.setBackgroundColor(0x00ffffff);
+	}
+	
+	private void highlightError(QuestionWidget questionWidget) {
+		FormEntryPrompt prompt = questionWidget.getPrompt();
+		FormIndex formIndex = prompt.getIndex();
+		IAnswerData answer = questionWidget.getAnswer(false);
+		// validate its answer
+		FormController formController = Collect.getInstance().getFormController();
+		QuestionDef q = prompt.getQuestion();
+		if ((prompt.isRequired() && answer == null) || (!q.isComplex() && !formController.getFormDef().evaluateConstraint(formIndex.getReference(), answer))) {
+			highlightError(questionWidget, true);
+		} else {
+			highlightError(questionWidget, false);
+		}
+	}
+
+	private OnAnswerChangedListener onAnswerChangedListener = new OnAnswerChangedListener() {
+		@Override public void onAnswerChanged(QuestionWidget questionWidget) {
+			highlightError(questionWidget);
+		}};
+		
+	private void highlightAllErrors() {
+		if (mCurrentView instanceof ODKView) {
+			ODKView odkView = (ODKView) mCurrentView;
+			ArrayList<QuestionWidget> widgets = odkView.getWidgets();
+			for (QuestionWidget questionWidget : widgets) {
+				highlightError(questionWidget);
+			}
+		}
+	}
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
 		// must be at the beginning of any activity that can be called from an
 		// external intent
@@ -217,8 +264,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 
 		setContentView(R.layout.form_entry);
-		setTitle(getString(R.string.app_name) + " > "
-				+ getString(R.string.loading_form));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > "
+					+ getString(R.string.loading_form));
 
 		mBeenSwiped = false;
 		mAlertDialog = null;
@@ -232,6 +280,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		mAdminPreferences = getSharedPreferences(
 				AdminPreferencesActivity.ADMIN_PREFERENCES, 0);
 
+		
+		mBreadCrumbs = (TextView) findViewById(R.id.breadcrumbs);
 		mNextButton = (ImageButton) findViewById(R.id.form_forward_button);
 		mNextButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -694,6 +744,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			((ODKView) mCurrentView).setBinaryData(sl);
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
+		case BEARING_CAPTURE:
+            String bearing = intent.getStringExtra(BEARING_RESULT);
+            ((ODKView) mCurrentView).setBinaryData(bearing);
+            saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 		case HIERARCHY_ACTIVITY:
 			// We may have jumped to a new index in hierarchy activity, so
 			// refresh
@@ -868,7 +922,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	 * Clears the answer on the screen.
 	 */
 	private void clearAnswer(QuestionWidget qw) {
-		if (qw.getAnswer() != null) {
+		if (qw.getAnswer(true) != null) {
 			qw.clearAnswer();
 		}
 	}
@@ -951,16 +1005,15 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private View createView(int event, boolean advancingPage) {
 		FormController formController = Collect.getInstance()
 				.getFormController();
-		setTitle(getString(R.string.app_name) + " > "
-				+ formController.getFormTitle());
+		setTitle(formController.getFormTitle());
 
 		switch (event) {
 		case FormEntryController.EVENT_BEGINNING_OF_FORM:
 			View startView = View
 					.inflate(this, R.layout.form_entry_start, null);
-			setTitle(getString(R.string.app_name) + " > "
-					+ formController.getFormTitle());
+			setTitle(formController.getFormTitle());
 
+			mBreadCrumbs.setText(formController.getFormTitle());
 			Drawable image = null;
 			File mediaFolder = formController.getMediaFolder();
 			String mediaDir = mediaFolder.getAbsolutePath();
@@ -1038,6 +1091,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 			return startView;
 		case FormEntryController.EVENT_END_OF_FORM:
+			mBreadCrumbs.setText(formController.getFormTitle());
+
 			View endView = View.inflate(this, R.layout.form_entry_end, null);
 			((TextView) endView.findViewById(R.id.description))
 					.setText(getString(R.string.save_enter_data_description,
@@ -1169,7 +1224,30 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				FormEntryCaption[] groups = formController
 						.getGroupsForCurrentIndex();
 				odkv = new ODKView(this, formController.getQuestionPrompts(),
-						groups, advancingPage);
+						groups, advancingPage, onAnswerChangedListener);
+				
+				// set the breadcrumbs
+				StringBuffer s = new StringBuffer("");
+				String t = "";
+				int i;
+				// list all groups in one string
+				for (FormEntryCaption g : groups) {
+					i = g.getMultiplicity() + 1;
+					t = g.getLongText();
+					if (t != null) {
+						s.append(t);
+						if (g.repeats() && i > 0) {
+							s.append(" (" + i + ")");
+						}
+						s.append(" > ");
+					}
+				}
+
+				if (s.length() > 0) {
+					mBreadCrumbs.setText(s.substring(0, s.length() - 3));
+				}
+				
+				
 				Log.i(t,
 						"created view for group "
 								+ (groups.length > 0 ? groups[groups.length - 1]
@@ -1256,11 +1334,13 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 			next = createView(event, true);
 			showView(next, AnimationType.RIGHT);
+			highlightAllErrors();
 			break;
 		case FormEntryController.EVENT_END_OF_FORM:
 		case FormEntryController.EVENT_REPEAT:
 			next = createView(event, true);
 			showView(next, AnimationType.RIGHT);
+			highlightAllErrors();
 			break;
 		case FormEntryController.EVENT_PROMPT_NEW_REPEAT:
 			createRepeatDialog();
@@ -1449,6 +1529,15 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 
 		showCustomToast(constraintText, Toast.LENGTH_SHORT);
+
+		// scroll to the field in error
+		ODKView odkView = (ODKView) mCurrentView;
+		FormIndex target = index;
+		while (target.getNextLevel() != null) {
+			target = target.getNextLevel();
+		}
+		QuestionWidget questionWidget = odkView.getWidgets().get(target.getLocalIndex());
+		questionWidget.requestRectangleOnScreen(new Rect(0, 0, questionWidget.getWidth(), questionWidget.getHeight()));
 	}
 
 	/**
@@ -2531,8 +2620,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 
 			if ((Math.abs(e1.getX() - e2.getX()) > xPixelLimit && Math.abs(e1
-					.getY() - e2.getY()) < yPixelLimit)
-					|| Math.abs(e1.getX() - e2.getX()) > xPixelLimit * 2) {
+					.getY() - e2.getY()) < yPixelLimit)) { // GOT RID OF "half inch = page swap no matter what" 
+//					|| Math.abs(e1.getX() - e2.getX()) > xPixelLimit * 2) { 
 				mBeenSwiped = true;
 				if (velocityX > 0) {
 					if (e1.getX() > e2.getX()) {

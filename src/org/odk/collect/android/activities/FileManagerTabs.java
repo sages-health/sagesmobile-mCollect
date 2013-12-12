@@ -43,9 +43,11 @@ public class FileManagerTabs extends TabActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Util.forceOverflowMenu(this);
 
-		setTitle(getString(R.string.app_name) + " > "
-				+ getString(R.string.manage_files));
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+			setTitle(getString(R.string.app_name) + " > "
+					+ getString(R.string.manage_files));
 
 		final TabHost tabHost = getTabHost();
 		tabHost.setBackgroundColor(Color.WHITE);

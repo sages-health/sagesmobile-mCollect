@@ -25,6 +25,7 @@ import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.MediaUtils;
+import org.odk.collect.android.widgets.QuestionWidget.OnAnswerChangedListener;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -62,8 +63,8 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
     private ImageView mImageView;
     private TextView mErrorTextView;
 
-	public SignatureWidget(Context context, FormEntryPrompt prompt) {
-		super(context, prompt);
+	public SignatureWidget(Context context, FormEntryPrompt prompt, OnAnswerChangedListener onAnswerChangedListener) {
+		super(context, prompt, onAnswerChangedListener);
 		
 		mInstanceFolder = 
 				Collect.getInstance().getFormController().getInstancePath().getParent();
@@ -193,11 +194,12 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
 
         // reset buttons
         mSignButton.setText(getContext().getString(R.string.sign_button));
+        answerChanged();
 	}
 
 	
 	@Override
-	public IAnswerData getAnswer() {
+	public IAnswerData getAnswer(boolean clearFocus) {
         if (mBinaryName != null) {
             return new StringData(mBinaryName.toString());
         } else {
@@ -236,6 +238,7 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
         }
 
     	Collect.getInstance().getFormController().setIndexWaitingForData(null);
+    	answerChanged();
 	}
 
 	@Override

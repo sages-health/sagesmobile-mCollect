@@ -99,7 +99,7 @@
         
         <activity 
             android:name="edu.jhuapl.sages.mobile.lib.OdkSecuritySetupActivity"
-            android:label="ODK Security Setup">
+            android:label="SAGES mCollect > Security Setup">
         </activity>
         
         <activity

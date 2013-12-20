@@ -213,10 +213,13 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private TextView mBreadCrumbs;
 	
 	private void highlightError(QuestionWidget questionWidget, boolean on) {
-		if (on)
+		if (on) {
+//			questionWidget.setBackgroundResource(R.drawable.redbox);
 			questionWidget.setBackgroundColor(0x66990000);
-		else
+		} else {
+//			questionWidget.setBackgroundResource(0);
 			questionWidget.setBackgroundColor(0x00ffffff);
+		}
 	}
 	
 	private void highlightError(QuestionWidget questionWidget) {
